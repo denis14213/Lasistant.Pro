@@ -1,0 +1,25 @@
+# Dépendances et productions
+node_modules
+dist
+dist-ssr
+coverage
+*.local
+
+# Variables d'environnement (ne jamais versionner les secrets)
+.env
+.env.*
+!.env.example
+
+# Journaux
+logs
+*.log
+npm-debug.log*
+
+# Éditeurs et systèmes
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.suo
+*.sw?

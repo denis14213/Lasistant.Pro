@@ -1,0 +1,423 @@
+@import 'tailwindcss';
+
+/* =============================================================================
+   Jetons du système de design LASISTANT.PRO
+   Couleurs, typographies, rayons et ombres issus des maquettes validées.
+   Toute nouvelle teinte s'ajoute ici : aucune couleur n'est écrite en dur
+   dans les composants.
+   ============================================================================= */
+@theme {
+  /* Palette volontairement vide au départ : seules les couleurs de la marque existent. */
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Encres et fonds */
+  --color-ink: #17151c;
+  --color-ink-soft: #2b2733;
+  --color-muted: #5f5a69;
+  --color-subtle: #8b8594;
+  --color-line: #e8e3ec;
+  --color-line-strong: #d8d1df;
+  --color-canvas: #fbfaf8;
+  --color-paper: #ffffff;
+  --color-mist: #f4eff7;
+  --color-sand: #f6f2eb;
+  --color-sage: #edf5ee;
+  --color-cloud: #f5f4f7;
+  --color-smoke: #faf9fb;
+  --color-night: #141218;
+  --color-night-mark: #1e1b24;
+  --color-plum: #2a0f38;
+  --color-on-dark: #cbc5d3;
+  --color-on-dark-muted: #aba4b5;
+  --color-on-plum: #cdbfd8;
+  --color-on-dark-strong: #e8e4ee;
+
+  /* Marque */
+  --color-brand: #7a1fa0;
+  --color-brand-dark: #5e1680;
+  --color-brand-bright: #b526d9;
+  --color-brand-soft: #f3e6f8;
+  --color-brand-light: #e3b0f5;
+  --color-brand-pale: #e7c6f2;
+  --color-success: #177a2e;
+  --color-success-dark: #135f25;
+  --color-success-bright: #2bb24c;
+  --color-success-soft: #e4f3e7;
+  --color-success-light: #5fd06f;
+  --color-gold: #c4952a;
+  --color-gold-dark: #6e4f0c;
+  --color-gold-soft: #f8efd8;
+  --color-gold-line: #e6d29a;
+
+  /* États */
+  --color-danger: #b42318;
+  --color-danger-dark: #7a1a12;
+  --color-danger-soft: #fdecea;
+  /* Rouge lisible sur fond sombre (icône d'erreur des notifications) */
+  --color-danger-bright: #f97066;
+  --color-danger-line: #f3c9c4;
+  --color-warning: #8a5300;
+  --color-warning-dark: #5b4310;
+  --color-warning-soft: #fcf0da;
+  --color-warning-line: #eeddb0;
+  --color-info: #1f4fd1;
+  --color-info-dark: #1a3fa8;
+  --color-info-soft: #e8eeff;
+  --color-neutral: #4b4654;
+  --color-neutral-soft: #eceaf0;
+
+  /* Nuances fonctionnelles (bordures, contrôles, graphiques) */
+  --color-brand-line: #e2cdec;
+  --color-brand-wash: #f9f6fb;
+  --color-brand-200: #e3cfee;
+  --color-brand-300: #cda8e1;
+  --color-gold-wash: #fffcf4;
+  --color-gold-deep: #8a6412;
+  --color-success-line: #c6e5cd;
+
+  /* WhatsApp : vert de la marque assombri pour un contraste d'au moins 3:1 avec l'icône blanche */
+  --color-whatsapp: #1da851;
+  --color-whatsapp-dark: #168a42;
+  --color-info-line: #cbd7fb;
+  --color-placeholder: #77717f;
+  --color-control: #a39bad;
+  --color-disabled: #aba4b4;
+  --color-line-hover: #bbb2c5;
+  --color-switch-off: #d6d0dd;
+  --color-wordmark-green: #2a9a35;
+  --color-swoosh: #a21cc9;
+  --color-gold-dash: #d3b565;
+  --color-gold-hatch: #fbf6e9;
+  --color-map: #eeeaf1;
+  --color-map-line: #e3dde8;
+  --color-map-road: #dcd5e2;
+  /* Aperçu des résultats de recherche (couleurs des moteurs de recherche) */
+  --color-serp-url: #2b6b3a;
+  --color-serp-title: #3d1a9e;
+  --color-serp-text: #4d4856;
+
+  /* Typographies auto-hébergées (aucun appel à un service tiers) */
+  --font-sans:
+    'Instrument Sans Variable', 'Instrument Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  /* Échelle typographique éditoriale, fluide entre mobile et grand écran */
+  --text-display: clamp(2.625rem, 5.4vw, 5rem);
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.042em;
+  --text-h1: clamp(2.25rem, 4.3vw, 4rem);
+  --text-h1--line-height: 1.04;
+  --text-h1--letter-spacing: -0.036em;
+  --text-h2: clamp(1.875rem, 3.2vw, 3rem);
+  --text-h2--line-height: 1.08;
+  --text-h2--letter-spacing: -0.032em;
+  --text-h3: clamp(1.375rem, 1.9vw, 1.75rem);
+  --text-h3--line-height: 1.18;
+  --text-h3--letter-spacing: -0.02em;
+  --text-lead: clamp(1.0625rem, 1.35vw, 1.25rem);
+  --text-lead--line-height: 1.6;
+  --text-md: 0.9375rem;
+  --text-md--line-height: 1.55;
+
+  /* Rayons */
+  --radius-field: 0.75rem;
+  --radius-box: 1.125rem;
+  --radius-card: 1.625rem;
+  --radius-panel: 2.25rem;
+
+  /* Ombres */
+  --shadow-soft: 0 1px 2px rgb(23 21 28 / 0.05), 0 1px 3px rgb(23 21 28 / 0.04);
+  --shadow-raised: 0 18px 40px -18px rgb(23 21 28 / 0.22), 0 3px 8px rgb(23 21 28 / 0.04);
+  --shadow-float: 0 40px 80px -30px rgb(42 15 56 / 0.38);
+  --shadow-cta: 0 12px 26px -14px rgb(122 31 160 / 0.75);
+  --shadow-focus: 0 0 0 4px rgb(181 38 217 / 0.14);
+  --shadow-invalid: 0 0 0 4px rgb(180 35 24 / 0.09);
+
+  /* Le menu complet s'affiche à partir de 1200 px (cahier des charges, section 12) */
+  --breakpoint-xl: 75rem;
+
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+  /* Barre de navigation : n'apparaît qu'après un court délai (aucun clignotement si la page est prête) */
+  --animate-nav-progress: nav-progress 2.4s cubic-bezier(0.1, 0.6, 0.3, 1) 160ms both;
+
+  @keyframes nav-progress {
+    0% {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    8% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+      transform: scaleX(0.92);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 100% 0;
+    }
+    100% {
+      background-position: -100% 0;
+    }
+  }
+}
+
+/* =============================================================================
+   Styles de base
+   ============================================================================= */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-padding-top: 6.5rem;
+    /* Filet de sécurité : la page ne défile jamais horizontalement, même si un élément décoratif
+       dépasse. Appliqué à la racine (transmis à la fenêtre), il ne gêne pas les en-têtes collants.
+       « hidden » sert de repli aux navigateurs anciens qui ne connaissent pas « clip ». */
+    overflow-x: hidden;
+    overflow-x: clip;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-base leading-[1.6] text-ink antialiased md:text-[17px];
+    text-rendering: optimizeLegibility;
+    /* Un mot plus long que la ligne (titre sur très petit écran, adresse e-mail) est coupé
+       plutôt que de déborder. */
+    overflow-wrap: break-word;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  /* Un groupe de champs rétrécit comme un bloc ordinaire (par défaut, jamais sous son contenu). */
+  fieldset {
+    min-inline-size: 0;
+  }
+
+  /* Très petits écrans (Galaxy Z Fold replié, 280 px) : titres réduits pour que les mots longs
+     (« accompagnement », « hébergement ») tiennent sur une ligne sans être coupés. */
+  @media (max-width: 359px) {
+    :root {
+      --text-display: 2.125rem;
+      --text-h1: 1.875rem;
+      --text-h2: 1.625rem;
+    }
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-brand-bright);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-dark);
+  }
+
+  /* Une fenêtre modale ouverte bloque le défilement de la page en arrière-plan */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  dialog::backdrop {
+    background: rgb(20 18 24 / 0.5);
+  }
+
+  /* Respect des préférences d'accessibilité : pas d'animation imposée */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* =============================================================================
+   Utilitaires propres au projet
+   ============================================================================= */
+
+/* Conteneur de mise en page : 1240 px de contenu, marges de 20 px (mobile) à 32 px. */
+@utility container-site {
+  width: 100%;
+  max-width: calc(77.5rem + 4rem);
+  margin-inline: auto;
+  /* Les marges s'élargissent si l'appareil réserve une zone (encoche des iPhone en paysage). */
+  padding-inline: max(1.25rem, env(safe-area-inset-left)) max(1.25rem, env(safe-area-inset-right));
+
+  @variant md {
+    padding-inline: max(2rem, env(safe-area-inset-left)) max(2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Accent éditorial : un ou deux mots en italique (Instrument Serif) dans les titres. */
+@utility accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* =============================================================================
+   Composants transverses (motifs trop fins pour des classes utilitaires)
+   ============================================================================= */
+@layer components {
+  /* Sur-titre : capitales espacées précédées du losange doré, signature de la marque */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: var(--color-brand);
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    flex: none;
+    background: var(--color-gold);
+    transform: rotate(45deg);
+  }
+
+  /* Squelette de chargement (contenu en cours de récupération) */
+  .skeleton {
+    display: block;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #efebf2 0%, #f8f5fa 40%, #efebf2 80%);
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+  }
+
+  /* Contenus longs : articles, mentions légales, politique de confidentialité */
+  .prose-lp {
+    max-width: 45rem;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--color-ink-soft);
+  }
+
+  @media (width >= 48rem) {
+    .prose-lp {
+      font-size: 1.125rem;
+    }
+  }
+
+  .prose-lp > * + * {
+    margin-top: 1.15em;
+  }
+
+  .prose-lp h2 {
+    margin-top: 2em;
+    scroll-margin-top: 7rem;
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.026em;
+    color: var(--color-ink);
+  }
+
+  @media (width >= 48rem) {
+    .prose-lp h2 {
+      font-size: 1.875rem;
+    }
+  }
+
+  .prose-lp h3 {
+    margin-top: 1.7em;
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    color: var(--color-ink);
+  }
+
+  .prose-lp ul {
+    list-style: disc;
+    padding-left: 1.25em;
+  }
+
+  .prose-lp ol {
+    list-style: decimal;
+    padding-left: 1.25em;
+  }
+
+  .prose-lp li + li {
+    margin-top: 0.45em;
+  }
+
+  .prose-lp li::marker {
+    color: var(--color-brand);
+  }
+
+  .prose-lp a {
+    color: var(--color-brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .prose-lp strong {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .prose-lp .lede {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--color-ink);
+  }
+
+  @media (width >= 48rem) {
+    .prose-lp .lede {
+      font-size: 1.3rem;
+    }
+  }
+
+  .prose-compact {
+    font-size: 1rem;
+  }
+
+  /* Emplacement d'un contenu à fournir par le propriétaire (photo, historique…) */
+  .placeholder-hatch {
+    border: 1.5px dashed var(--color-gold-dash);
+    background: repeating-linear-gradient(
+      135deg,
+      var(--color-gold-hatch) 0 12px,
+      var(--color-gold-soft) 12px 24px
+    );
+    color: var(--color-gold-dark);
+  }
+
+  /* Créneau hors disponibilités dans l'agenda du back-office */
+  .hatch-muted {
+    background: repeating-linear-gradient(135deg, var(--color-smoke) 0 8px, var(--color-cloud) 8px 16px);
+  }
+
+  /* Fond quadrillé évoquant un plan, tant que la carte interactive n'est pas affichée */
+  .map-grid {
+    background-color: var(--color-map);
+    background-image:
+      linear-gradient(var(--color-map-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-map-line) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+}

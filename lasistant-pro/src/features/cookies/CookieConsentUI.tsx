@@ -11,7 +11,8 @@ import { ConsentCategoryRow } from './ConsentCategoryRow';
 
 /**
  * Interface du consentement affichée sur le site public :
- * bannière à la première visite, fenêtre de préférences et bouton de rappel.
+ * bannière à la première visite, fenêtre de préférences et bouton de rappel (sur ordinateur ;
+ * sur téléphone, le lien « Gestion des cookies » du pied de page le remplace pour alléger l'écran).
  * « Tout refuser » et « Tout accepter » ont volontairement le même poids visuel.
  */
 export function CookieConsentUI() {
@@ -77,7 +78,7 @@ function CookieSettingsButton() {
       type="button"
       onClick={openPreferences}
       aria-label="Modifier mes préférences de cookies"
-      className="fixed bottom-[calc(88px+env(safe-area-inset-bottom))] left-[max(1rem,env(safe-area-inset-left))] z-[110] inline-flex h-11 items-center gap-2 rounded-full bg-night pr-4 pl-3 text-sm font-semibold text-white shadow-raised transition-colors hover:bg-brand-dark md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-5 md:h-12 print:hidden"
+      className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-5 z-[110] hidden h-12 items-center gap-2 rounded-full bg-night pr-4 pl-3 text-sm font-semibold text-white shadow-raised transition-colors hover:bg-brand-dark md:inline-flex print:hidden"
     >
       <IconCookie className="size-4.5" aria-hidden />
       Cookies

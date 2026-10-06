@@ -11,7 +11,7 @@ const WELCOME_MESSAGE = 'Bonjour LASISTANT.PRO, je souhaite des informations sur
  * avec l'agence (application WhatsApp sur téléphone, WhatsApp Web sur ordinateur).
  * Affiché lorsque l'option est activée et le numéro renseigné (Coordonnées & réglages).
  *
- * Sur mobile, il se place au-dessus de la barre d'action et respecte les zones réservées
+ * Sur mobile, il flotte au-dessus de la barre d'onglets et respecte les zones réservées
  * de l'appareil (barre de gestes, encoche) ; la mention au survol n'existe que sur ordinateur.
  */
 export function WhatsAppButton() {
@@ -26,7 +26,7 @@ export function WhatsAppButton() {
       rel="noopener noreferrer"
       onClick={() => trackConversion('whatsapp')}
       aria-label="Écrire à LASISTANT.PRO sur WhatsApp (nouvelle fenêtre)"
-      className="group fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[calc(88px+env(safe-area-inset-bottom))] z-[105] flex size-14 items-center justify-center rounded-full bg-whatsapp text-white shadow-[0_14px_30px_-10px_rgb(20_18_24/0.45)] ring-4 ring-white/70 transition-[transform,background-color] duration-200 hover:scale-105 hover:bg-whatsapp-dark focus-visible:scale-105 motion-reduce:transition-none md:right-6 md:bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:size-15 print:hidden"
+      className="group fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[calc(var(--mobile-nav-height)+16px)] z-[105] flex size-14 items-center justify-center rounded-full bg-whatsapp text-white shadow-[0_14px_30px_-10px_rgb(20_18_24/0.45)] ring-4 ring-white/70 transition-[transform,background-color] duration-200 hover:scale-105 hover:bg-whatsapp-dark focus-visible:scale-105 motion-reduce:transition-none md:right-6 md:bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:size-15 print:hidden"
     >
       <WhatsAppLogo className="size-7 md:size-8" />
       <span

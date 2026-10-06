@@ -45,12 +45,14 @@ import {
   MapPinIcon,
   MapTrifoldIcon,
   MinusIcon,
+  NewspaperIcon,
   PaperPlaneTiltIcon,
   PhoneIcon,
   PlusIcon,
   PrinterIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
+  StackIcon,
   StethoscopeIcon,
   StudentIcon,
   SuitcaseRollingIcon,
@@ -155,6 +157,10 @@ export const IconHyperlink = defineIcon(LinkSimpleIcon, 'hyperlink');
 /* ------------------------------------------------------------------------------------------ */
 /** Document, pièce jointe, page de contenu. */
 export const IconDocument = defineIcon(FileTextIcon, 'document');
+/** Espace infos, articles (onglet du site mobile et rubrique du back-office). */
+export const IconArticles = defineIcon(NewspaperIcon, 'articles');
+/** Catalogue des services (onglet du site mobile et rubrique du back-office). */
+export const IconServices = defineIcon(StackIcon, 'services');
 export const IconCookie = defineIcon(CookieIcon, 'cookie');
 export const IconCamera = defineIcon(CameraIcon, 'camera');
 

@@ -171,6 +171,12 @@
    Styles de base
    ============================================================================= */
 @layer base {
+  :root {
+    /* Hauteur de la barre d'onglets mobile, zone de la barre de gestes comprise : les éléments
+       flottants (WhatsApp, notifications) se placent au-dessus, le pied de page la contourne. */
+    --mobile-nav-height: calc(62px + max(10px, env(safe-area-inset-bottom)));
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;

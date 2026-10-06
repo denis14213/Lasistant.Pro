@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router';
 import { servicesQuery } from '@/api';
 import { Logo } from '@/components/brand/Logo';
-import { ButtonLink, IconAnchor, IconBox, IconButton } from '@/components/ui';
+import { ButtonLink, IconBox, IconButton } from '@/components/ui';
 import { IconArrowRight, IconChevronDown, IconEmail, IconFacebook, IconMenu, IconPhone } from '@/components/ui/icons';
 import { MAIN_NAVIGATION } from '@/config/navigation';
 import { ROUTES, servicePath } from '@/config/routes';
@@ -24,7 +24,7 @@ export function SiteHeader() {
 
   return (
     <>
-      {/* Barre utilitaire (masquée sur mobile, où la barre d'action la remplace) */}
+      {/* Barre utilitaire (masquée sur mobile, où la barre d'onglets et le menu prennent le relais) */}
       <div className="hidden bg-night text-[13.5px] text-on-dark md:block">
         <div className="container-site flex min-h-[42px] items-center justify-between gap-6">
           <p className="flex items-center gap-2.5">
@@ -81,11 +81,6 @@ export function SiteHeader() {
           </nav>
 
           <div className="ml-auto flex items-center gap-2.5 xl:ml-0">
-            {phone ? (
-              <IconAnchor href={phoneHref(phone)} label={`Appeler LASISTANT.PRO au ${phone}`} className="max-[359px]:hidden md:hidden">
-                <IconPhone aria-hidden />
-              </IconAnchor>
-            ) : null}
             <ButtonLink to={ROUTES.booking} size="sm" className="hidden md:inline-flex">
               Demander un accompagnement
             </ButtonLink>

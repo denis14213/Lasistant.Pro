@@ -25,8 +25,8 @@ import {
   Tag,
 } from '@/components/ui';
 import { Input, Select, Switch } from '@/components/ui/form';
-import { IconAdd, IconSearch } from '@/components/ui/icons';
-import { IconArticles, IconEdit, IconPreview } from '@/components/ui/icons-admin';
+import { IconAdd, IconArticles, IconSearch } from '@/components/ui/icons';
+import { IconEdit, IconPreview } from '@/components/ui/icons-admin';
 import { ROUTES } from '@/config/routes';
 import { ARTICLE_STATUS_LABELS } from '@/content/labels';
 import { useArticleActions } from '@/features/admin/articles/useArticleActions';

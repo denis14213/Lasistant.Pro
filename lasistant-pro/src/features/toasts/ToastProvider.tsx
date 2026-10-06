@@ -55,7 +55,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <div
               aria-live="polite"
               aria-relevant="additions"
-              className="pointer-events-none fixed inset-x-4 bottom-24 z-[140] flex flex-col items-center gap-2 md:inset-x-auto md:right-6 md:bottom-6 md:items-end"
+              className="pointer-events-none fixed inset-x-4 bottom-[calc(var(--mobile-nav-height)+12px)] z-[140] flex flex-col items-center gap-2 md:inset-x-auto md:right-6 md:bottom-6 md:items-end"
             >
               {toasts.map((toast) => (
                 <Toast key={toast.id} toast={toast} onDismiss={dismiss} />

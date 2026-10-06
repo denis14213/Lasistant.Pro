@@ -1,8 +1,8 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { Link } from 'react-router';
 import { Avatar } from '@/components/admin/Avatar';
-import { IconCalendar } from '@/components/ui/icons';
-import { IconArticles, IconNotification } from '@/components/ui/icons-admin';
+import { IconArticles, IconCalendar } from '@/components/ui/icons';
+import { IconNotification } from '@/components/ui/icons-admin';
 import { ROUTES } from '@/config/routes';
 import type { AdminNotification } from '@/features/admin/notifications/useAdminNotifications';
 import { cn } from '@/lib/cn';

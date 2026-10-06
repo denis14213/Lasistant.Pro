@@ -1,13 +1,5 @@
-import { IconCalendar, IconEmail, type AppIcon } from '@/components/ui/icons';
-import {
-  IconArticles,
-  IconDashboard,
-  IconIdentity,
-  IconImages,
-  IconInbox,
-  IconServices,
-  IconUsers,
-} from '@/components/ui/icons-admin';
+import { IconArticles, IconCalendar, IconEmail, IconServices, type AppIcon } from '@/components/ui/icons';
+import { IconDashboard, IconIdentity, IconImages, IconInbox, IconUsers } from '@/components/ui/icons-admin';
 import type { AdminIconName } from '@/types';
 
 /**

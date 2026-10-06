@@ -10,12 +10,14 @@ import { Badge, ButtonLink, EmptyState, IconBox, IconLink, ResponsiveImage } fro
 import {
   IconAdd,
   IconArrowRight,
+  IconArticles,
   IconCalendar,
   IconChevronRight,
+  IconServices,
   IconUpload,
   IconWarning,
 } from '@/components/ui/icons';
-import { IconArticles, IconIdentity, IconInbox, IconServices } from '@/components/ui/icons-admin';
+import { IconIdentity, IconInbox } from '@/components/ui/icons-admin';
 import { ROUTES } from '@/config/routes';
 import { ARTICLE_STATUS_LABELS, CONTACT_PREFERENCE_LABELS } from '@/content/labels';
 import { WeeklyChart } from '@/features/admin/dashboard/WeeklyChart';

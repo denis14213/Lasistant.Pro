@@ -9,13 +9,13 @@ import { CookieConsentUI } from '@/features/cookies/CookieConsentUI';
 import { useSiteSettings } from '@/features/settings/useSiteSettings';
 import { MaintenanceScreen } from '@/features/system/MaintenanceScreen';
 import { configureAnalytics } from '@/lib/analytics';
-import { MobileActionBar } from './MobileActionBar';
+import { MobileBottomNavigation } from './MobileBottomNavigation';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
 import { WhatsAppButton } from './WhatsAppButton';
 
 /**
- * Gabarit du site public : en-tête, contenu, pied de page, barre d'action mobile,
+ * Gabarit du site public : en-tête, contenu, pied de page, barre d'onglets sur téléphone,
  * bouton flottant WhatsApp et consentement aux cookies. Le mode maintenance remplace tout le site pour les
  * visiteurs, mais pas pour l'équipe connectée.
  */
@@ -44,7 +44,7 @@ export function PublicLayout() {
         </Suspense>
       </main>
       <SiteFooter />
-      <MobileActionBar />
+      <MobileBottomNavigation />
       <WhatsAppButton />
       <CookieConsentUI />
       <RouteFocus />

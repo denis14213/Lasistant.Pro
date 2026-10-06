@@ -28,7 +28,6 @@ import {
   ListBulletsIcon,
   ListNumbersIcon,
   MonitorIcon,
-  NewspaperIcon,
   NotePencilIcon,
   ParagraphIcon,
   PencilSimpleIcon,
@@ -41,7 +40,6 @@ import {
   SignOutIcon,
   SignpostIcon,
   SquaresFourIcon,
-  StackIcon,
   TextAaIcon,
   TextBIcon,
   TextHThreeIcon,
@@ -112,10 +110,6 @@ export const IconInbox = defineIcon(TrayIcon, 'inbox');
 export const IconNotification = defineIcon(BellIcon, 'notification');
 /** Rappel, notification envoyée à l'équipe. */
 export const IconReminder = defineIcon(BellRingingIcon, 'reminder');
-/** Espace infos, articles. */
-export const IconArticles = defineIcon(NewspaperIcon, 'articles');
-/** Catalogue des services. */
-export const IconServices = defineIcon(StackIcon, 'services');
 /** Note interne. */
 export const IconNote = defineIcon(NotePencilIcon, 'note');
 /** Message rédigé librement. */

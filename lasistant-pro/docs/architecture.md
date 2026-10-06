@@ -102,7 +102,8 @@ Le site est vérifié de 280 px (Galaxy Z Fold replié) à 1366 px (iPad Pro à 
 - **Tableaux de contenu** : `ResponsiveTable` (cartes sous 640 px). Les tableaux du back-office défilent dans leur panneau (`AdminTable`).
 - **Boutons** : le libellé peut passer sur deux lignes ; ne pas rétablir `whitespace-nowrap` sur un libellé long.
 - **Champs de saisie** : 16 px minimum sous 768 px (`text-base md:text-[…]`), sinon Safari sur iPhone zoome au focus.
-- **Éléments fixes** (barre d’action, boutons flottants, bandeau cookies) : décalés de `env(safe-area-inset-*)` pour la barre de gestes Android et l’encoche des iPhone.
+- **Éléments fixes** (barre d’onglets, bouton WhatsApp, bandeau cookies) : décalés de `env(safe-area-inset-*)` pour la barre de gestes Android et l’encoche des iPhone.
+- **Barre d’onglets sur téléphone** (moins de 768 px, `MobileBottomNavigation`) : Accueil, Services, Réserver (au centre, en relief), Espace infos, Contact. Sa hauteur, zone de gestes comprise, est la variable CSS `--mobile-nav-height` ; tout élément flottant se place au-dessus avec `bottom-[calc(var(--mobile-nav-height)+…)]`. Sur téléphone, l’en-tête se limite au logo et au menu, et le bouton « Cookies » laisse la place au lien « Gestion des cookies » du pied de page. Tablette et ordinateur ne changent pas.
 - **Filet de sécurité** : `html { overflow-x: clip }` empêche tout défilement horizontal de la page. Il ne dispense pas de corriger la cause d’un débordement.
 
 ## 8. Référencement

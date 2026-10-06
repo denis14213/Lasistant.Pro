@@ -46,6 +46,7 @@ Règles :
 | Grands états                  | hors connexion, maintenance, session expirée, page introuvable | regular, dans un disque teinté                                  | 28 à 48 px |
 | Identité (métiers, publics)   | assistance médicale, logement, accompagnement, étudiants       | duotone                                                         | 18 à 40 px |
 | Rubrique active (back-office) | menu latéral                                                   | fill                                                            | 18 px      |
+| Barre d’onglets (téléphone)   | Accueil, Services, Réserver, Espace infos, Contact             | regular ; fill pour l’onglet actif                              | 24 px      |
 
 ### Graisse optique
 

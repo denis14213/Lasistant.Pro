@@ -7,7 +7,7 @@ import { ButtonLink, IconBox, IconButton } from '@/components/ui';
 import { IconArrowRight, IconChevronDown, IconEmail, IconFacebook, IconMenu, IconPhone } from '@/components/ui/icons';
 import { MAIN_NAVIGATION } from '@/config/navigation';
 import { ROUTES, servicePath } from '@/config/routes';
-import { facebookHref, primaryEmail, primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
+import { activeEntries, facebookHref, primaryEmail, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { cn } from '@/lib/cn';
 import { phoneHref } from '@/lib/format';
 import { MobileMenu } from './MobileMenu';
@@ -19,7 +19,10 @@ import { MobileMenu } from './MobileMenu';
 export function SiteHeader() {
   const settings = useSiteSettings();
   const [menuOpen, setMenuOpen] = useState(false);
-  const phone = primaryPhone(settings);
+  // Un numéro par pays (premier numéro actif de chaque libellé : Tunisie, Gabon…).
+  const phones = activeEntries(settings.phones).filter(
+    (entry, index, list) => list.findIndex((other) => other.label === entry.label) === index,
+  );
   const email = primaryEmail(settings);
 
   return (
@@ -32,12 +35,21 @@ export function SiteHeader() {
             Assistance médicale, hébergement et accompagnement en Tunisie
           </p>
           <div className="flex items-center gap-5.5">
-            {phone ? (
-              <a href={phoneHref(phone)} className="inline-flex items-center gap-2 text-white/95 hover:text-white hover:underline">
+            {phones.map((phone, index) => (
+              <a
+                key={phone.id}
+                href={phoneHref(phone.value)}
+                // Numéros suivants à partir des grands écrans, pour garder la barre lisible.
+                className={cn(
+                  'items-center gap-2 text-white/95 hover:text-white hover:underline',
+                  index === 0 ? 'inline-flex' : 'hidden xl:inline-flex',
+                )}
+                aria-label={phone.label ? `${phone.value} (${phone.label})` : undefined}
+              >
                 <IconPhone className="size-4" aria-hidden />
-                {phone}
+                <span className="whitespace-nowrap">{phone.value}</span>
               </a>
-            ) : null}
+            ))}
             {email ? (
               <a href={`mailto:${email}`} className="hidden items-center gap-2 text-white/95 hover:text-white hover:underline lg:inline-flex">
                 <IconEmail className="size-4" aria-hidden />

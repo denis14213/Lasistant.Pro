@@ -15,8 +15,13 @@ export function ContactCards() {
     <ul className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
       <ContactCard icon="phone" label="Téléphone">
         {activeEntries(settings.phones).map((phone) => (
-          <a key={phone.id} href={phoneHref(phone.value)} className="font-semibold hover:text-brand">
-            {phone.value}
+          <a
+            key={phone.id}
+            href={phoneHref(phone.value)}
+            className="flex flex-wrap items-baseline gap-x-2 font-semibold hover:text-brand"
+          >
+            <span className="whitespace-nowrap">{phone.value}</span>
+            {phone.label ? <span className="text-[13px] font-normal text-muted">{phone.label}</span> : null}
           </a>
         ))}
       </ContactCard>

@@ -3,11 +3,10 @@ import { cn } from '@/lib/cn';
 
 /**
  * Logo LASISTANT.PRO : symbole « MA » couronné + mot-symbole « Lasistant.Pro ».
- * Le symbole n'est jamais déformé (dimensions intrinsèques respectées).
- * À remplacer par le fichier officiel du logo complet dès réception.
+ * Le symbole officiel n'est jamais déformé (dimensions intrinsèques respectées).
  */
 
-const MARK_RATIO = 473 / 512;
+const MARK_RATIO = 533 / 512;
 
 interface LogoMarkProps {
   size?: number;

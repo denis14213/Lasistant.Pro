@@ -13,8 +13,9 @@ export function createSiteSettingsSeed(now = new Date()): SiteSettings {
     description:
       'Service social d’assistance médicale, d’accompagnement et de recherche de logement en Tunisie, avec une approche humaine et personnalisée.',
     phones: [
-      { id: 'tel-principal', label: 'Principal', value: '+216 54 479 391', active: true },
-      { id: 'tel-secondaire', label: 'Secondaire', value: '+216 25 393 214', active: true },
+      { id: 'tel-principal', label: 'Tunisie', value: '+216 54 479 391', active: true },
+      { id: 'tel-secondaire', label: 'Tunisie', value: '+216 25 393 214', active: true },
+      { id: 'tel-gabon', label: 'Gabon', value: '+241 07 63 03 39', active: true },
     ],
     emails: [
       {

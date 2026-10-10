@@ -74,7 +74,12 @@ export function SiteFooter() {
               <li key={phone.id}>
                 <a href={phoneHref(phone.value)} className="flex items-start gap-2.5 hover:text-white">
                   <IconPhone className="mt-1 size-4 shrink-0 text-on-dark-muted" aria-hidden />
-                  {phone.value}
+                  <span>
+                    <span className="whitespace-nowrap">{phone.value}</span>
+                    {phone.label ? (
+                      <span className="ml-2 text-[12.5px] text-on-dark-muted">{phone.label}</span>
+                    ) : null}
+                  </span>
                 </a>
               </li>
             ))}

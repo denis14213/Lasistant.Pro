@@ -17,12 +17,15 @@ export function ContactChannels() {
     <ul className="flex flex-col">
       {phones.length > 0 ? (
         <ChannelRow icon={<IconPhone />} label="Téléphone">
-          {phones.map((phone, index) => (
-            <span key={phone.id}>
-              {index > 0 ? <span aria-hidden> · </span> : null}
-              <a href={phoneHref(phone.value)} className="transition-colors hover:text-brand-pale">
+          {phones.map((phone) => (
+            <span key={phone.id} className="block">
+              <a
+                href={phoneHref(phone.value)}
+                className="whitespace-nowrap transition-colors hover:text-brand-pale"
+              >
                 {phone.value}
               </a>
+              {phone.label ? <span className="ml-2 text-[13px] opacity-70">{phone.label}</span> : null}
             </span>
           ))}
         </ChannelRow>

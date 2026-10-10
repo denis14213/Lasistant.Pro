@@ -50,6 +50,7 @@ export function BookingSummary({ rows }: BookingSummaryProps) {
         {activeEntries(settings.phones).map((phone) => (
           <TextAnchor key={phone.id} href={phoneHref(phone.value)} icon={<IconPhone />}>
             {phone.value}
+            {phone.label ? <span className="ml-2 font-normal text-muted">{phone.label}</span> : null}
           </TextAnchor>
         ))}
         {email ? (

@@ -28,15 +28,16 @@ export async function invokeFunction<T>(name: string, body: Record<string, unkno
   if (response.error) {
     if (response.error instanceof FunctionsHttpError) {
       const payload = (await response.error.context.json().catch(() => null)) as {
-        error?: { code?: string; message?: string };
+        error?: { code?: string; message?: string; retryAt?: string | null };
       } | null;
       const code = payload?.error?.code;
       const message = payload?.error?.message;
+      const retryAt = payload?.error?.retryAt ?? undefined;
       if (code === 'unauthorized') {
         throw new DataError('forbidden', message ?? 'Votre session a expiré. Reconnectez-vous.');
       }
       const known = KNOWN_CODES.find((candidate) => candidate === code);
-      if (known) throw new DataError(known, message ?? DATA_ERROR_MESSAGES[known]);
+      if (known) throw new DataError(known, message ?? DATA_ERROR_MESSAGES[known], { retryAt });
     }
     throw toDataError(response.error);
   }

@@ -108,52 +108,6 @@ export const accountRepository: AccountRepository = {
     return loadUser(userId);
   },
 
-  async startTwoFactor() {
-    const auth = getSupabase().auth;
-    // Une configuration commencée puis abandonnée est retirée avant d'en créer une nouvelle.
-    const { data: factors } = await auth.mfa.listFactors();
-    for (const factor of factors?.all ?? []) {
-      if (factor.factor_type === 'totp' && factor.status === 'unverified') {
-        await auth.mfa.unenroll({ factorId: factor.id });
-      }
-    }
-    const { data, error } = await auth.mfa.enroll({
-      factorType: 'totp',
-      issuer: 'LASISTANT.PRO',
-      friendlyName: `Application d’authentification ${new Date().toISOString()}`,
-    });
-    if (error || !data) throw toDataError(error);
-    return { factorId: data.id, qrCode: data.totp.qr_code, secret: data.totp.secret };
-  },
-
-  async confirmTwoFactor(userId, factorId, code) {
-    const { error } = await getSupabase().auth.mfa.challengeAndVerify({ factorId, code });
-    if (error) {
-      throw new DataError(
-        'validation',
-        'Ce code est incorrect ou a expiré. Saisissez le code actuellement affiché par votre application.',
-      );
-    }
-    return loadUser(userId);
-  },
-
-  async disableTwoFactor(userId) {
-    const auth = getSupabase().auth;
-    const { data: factors, error } = await auth.mfa.listFactors();
-    if (error) throw toDataError(error);
-    for (const factor of factors?.all ?? []) {
-      const result = await auth.mfa.unenroll({ factorId: factor.id });
-      if (result.error) throw toDataError(result.error);
-    }
-    await auth.refreshSession();
-    return loadUser(userId);
-  },
-
-  async regenerateRecoveryCodes() {
-    const result = await guard(() => getSupabase().rpc('regenerate_recovery_codes'));
-    return unwrap(result);
-  },
-
   /**
    * L'API d'authentification ne permet pas de lister les autres appareils : seule la session
    * en cours est affichée, et les autres peuvent être déconnectées en une fois.

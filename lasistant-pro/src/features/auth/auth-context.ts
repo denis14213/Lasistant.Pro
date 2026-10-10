@@ -5,9 +5,8 @@ import type { LoginResult } from './auth-service';
 export interface AuthApi {
   session: AuthSession | null;
   login: (email: string, password: string, remember: boolean) => Promise<LoginResult>;
+  /** Code reçu par e-mail après le mot de passe */
   verifyTwoFactor: (code: string) => Promise<boolean>;
-  /** Connexion avec un code de secours (application d'authentification perdue) */
-  redeemRecoveryCode: (code: string) => Promise<boolean>;
   logout: () => void;
   /** Signale une activité de l'utilisateur (prolonge la session) */
   touch: () => void;

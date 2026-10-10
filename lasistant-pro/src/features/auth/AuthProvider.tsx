@@ -3,7 +3,7 @@ import { authBackend, queryKeys } from '@/api';
 import { queryClient } from '@/app/query-client';
 import type { AuthSession } from '@/types';
 import { AuthContext, type AuthApi } from './auth-context';
-import { attemptLogin, redeemRecoveryCode, verifyTwoFactor as verifyCode } from './auth-service';
+import { attemptLogin, verifyTwoFactor as verifyCode } from './auth-service';
 import {
   clearSession,
   isSessionExpired,
@@ -54,6 +54,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Session serveur terminée ailleurs (expiration, déconnexion d'un autre appareil…).
   useEffect(() => authBackend.onSignedOut(endSession), [endSession]);
 
+  // Session restaurée au démarrage : elle doit avoir été vérifiée par le code reçu par e-mail
+  // (sessions ouvertes avant la double authentification par e-mail, vérification expirée).
+  useEffect(() => {
+    if (!readSession()) return;
+    void authBackend.isSecondFactorVerified().then((verified) => {
+      if (!verified) {
+        endSession();
+        void authBackend.signOut();
+      }
+    });
+  }, [endSession]);
+
   const logout = useCallback(() => {
     endSession();
     void authBackend.signOut();
@@ -79,7 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return result;
       },
       verifyTwoFactor: async (code) => open(await verifyCode(code)),
-      redeemRecoveryCode: async (code) => open(await redeemRecoveryCode(code)),
       logout,
       touch,
       updateIdentity: (identity) => {

@@ -11,6 +11,7 @@ export type {
   PasswordResetOutcome,
   ResetLinkKind,
   SignInOutcome,
+  TwoFactorDelivery,
 } from './contracts';
 export { DataError, getErrorMessage, isDataError } from './errors';
 export * from './queries';

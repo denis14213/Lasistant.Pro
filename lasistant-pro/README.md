@@ -50,7 +50,7 @@ Les tests automatisés n’utilisent jamais la base de production : ils tournent
 - **React Router 7** en mode « données » : chaque page est chargée à la demande et précharge ses données
 - **TanStack Query 5** : cache des données, états de chargement et d’erreur
 - **React Hook Form** + **Zod** : formulaires et validation (messages en français)
-- **Supabase** : PostgreSQL (RLS), API REST et RPC, Auth (TOTP), stockage, temps réel, Edge Functions
+- **Supabase** : PostgreSQL (RLS), API REST et RPC, Auth, stockage, temps réel, Edge Functions
 - **Tailwind CSS 4** : jetons du système de design dans `src/styles/index.css`
 - **Phosphor Icons** (`@phosphor-icons/react`, licence MIT) derrière un système d’icônes maison : voir [docs/icones.md](docs/icones.md)
 - **Vitest** + **Testing Library**, **ESLint**, **Prettier**
@@ -60,7 +60,7 @@ Les tests automatisés n’utilisent jamais la base de production : ils tournent
 ```text
 supabase/
 ├── migrations/     Schéma, règles d’accès, routes d’API, stockage, contenus d’origine (SQL versionné)
-└── functions/      Edge Functions (équipe : invitations, codes de secours)
+└── functions/      Edge Functions (équipe, code de connexion par e-mail, envoi des e-mails)
 worker/             Worker Cloudflare : fichiers introuvables et routes demandées sans navigation
 src/
 ├── app/            Démarrage : fournisseurs, routeur, routes publiques et back-office, erreurs de navigation
@@ -90,7 +90,7 @@ Règle de dépendance : `pages → features → components → lib`, et **seule 
 - **Responsive** — vérifié de 280 px (Galaxy Z Fold replié) à 1366 px (iPad Pro), téléphones à l’horizontale compris ; règles à respecter dans [docs/architecture.md](docs/architecture.md).
 - **Accessibilité** — lien d’évitement, focus déplacé à chaque page, vrais boutons radio, messages d’erreur annoncés, fenêtres `<dialog>` natives ; couleurs et tailles de cible choisies pour la lisibilité (objectif : WCAG 2.2 niveau AA).
 - **E-mails automatiques** — confirmation au demandeur, notification à l’équipe et rendez-vous confirmé, envoyés par l’Edge Function `envoi-emails` via Resend (file d’attente, nouvelles tentatives, aucun double envoi) : voir [docs/base-de-donnees.md](docs/base-de-donnees.md).
-- **Sécurité** — aucun HTML saisi n’est interprété (Markdown maison), liens filtrés, redirections limitées au back-office, verrouillage après 5 échecs, double authentification TOTP, déconnexion après inactivité. Les droits sont appliqués par la base (RLS) : sans double authentification validée, aucune donnée n’est renvoyée ; les envois publics sont contrôlés et limités côté serveur.
+- **Sécurité** — aucun HTML saisi n’est interprété (Markdown maison), liens filtrés, redirections limitées au back-office, verrouillage après 5 échecs, double authentification par code envoyé par e-mail (Resend, envois et essais limités), déconnexion après inactivité. Les droits sont appliqués par la base (RLS) : tant que le code de la session n’a pas été validé, aucune donnée n’est renvoyée ; les envois publics sont contrôlés et limités côté serveur.
 
 Détails : [docs/architecture.md](docs/architecture.md).
 

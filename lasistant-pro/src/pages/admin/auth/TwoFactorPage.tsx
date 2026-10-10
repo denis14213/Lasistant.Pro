@@ -1,81 +1,100 @@
-import { useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
-import { getErrorMessage } from '@/api';
+import { getErrorMessage, isDataError } from '@/api';
 import { Seo } from '@/components/seo/Seo';
 import { Button } from '@/components/ui';
-import { Checkbox, FieldError, Input } from '@/components/ui/form';
-import { IconArrowRight, IconKey } from '@/components/ui/icons';
-import { IconMobile } from '@/components/ui/icons-admin';
+import { FieldError } from '@/components/ui/form';
+import { IconArrowRight, IconEmail } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
 import { useAuth } from '@/features/auth/auth-context';
 import { AuthHeading, OneTimeCodeInput } from '@/features/auth/AuthParts';
-import { cancelPendingLogin, hasPendingTwoFactor } from '@/features/auth/auth-service';
+import {
+  cancelPendingLogin,
+  pendingTwoFactorDelivery,
+  resendTwoFactorCode,
+} from '@/features/auth/auth-service';
 import { REDIRECT_PARAM, safeRedirect } from '@/features/auth/session-guards';
 import { useToast } from '@/features/toasts/toast-context';
 
-/** Format d'un code de secours : 8 lettres ou chiffres, avec ou sans tiret (« 4F7K-92QD »). */
-const RECOVERY_CODE_PATTERN = /^[A-Z0-9]{4}-?[A-Z0-9]{4}$/i;
+/** Secondes restantes avant de pouvoir demander un nouveau code (0 : possible). */
+function secondsUntil(retryAt: string | null, now: number): number {
+  if (!retryAt) return 0;
+  return Math.max(0, Math.ceil((new Date(retryAt).getTime() - now) / 1000));
+}
+
+function formatWait(seconds: number): string {
+  if (seconds < 60) return `${seconds} s`;
+  const minutes = Math.ceil(seconds / 60);
+  return `${minutes} min`;
+}
 
 /**
- * Double authentification : code à usage unique de l'application d'authentification,
- * ou code de secours si le téléphone n'est plus disponible.
+ * Double authentification : code à 6 chiffres envoyé par e-mail après le mot de passe.
+ * La base n'ouvre aucun accès aux données tant que ce code n'a pas été validé.
  */
 export function Component() {
-  const { verifyTwoFactor, redeemRecoveryCode } = useAuth();
+  const { verifyTwoFactor } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const [searchParams] = useSearchParams();
-  const [pending] = useState(() => hasPendingTwoFactor());
-  const [mode, setMode] = useState<'application' | 'secours'>('application');
+  const [delivery, setDelivery] = useState(() => pendingTwoFactorDelivery());
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
   const errorId = useId();
 
+  const wait = secondsUntil(delivery?.retryAt ?? null, now);
+  useEffect(() => {
+    if (wait <= 0) return undefined;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [wait]);
+
   // Sans mot de passe vérifié au préalable, retour à la connexion.
-  if (!pending) return <Navigate to={ROUTES.admin.login} replace />;
-
-  const usingRecovery = mode === 'secours';
-
-  const switchMode = () => {
-    setMode(usingRecovery ? 'application' : 'secours');
-    setCode('');
-    setError(null);
-  };
+  if (!delivery) return <Navigate to={ROUTES.admin.login} replace />;
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const value = code.trim();
-    if (usingRecovery ? !RECOVERY_CODE_PATTERN.test(value) : !/^\d{6}$/.test(value)) {
-      setError(
-        usingRecovery ? 'Saisissez un code de secours (8 caractères).' : 'Saisissez les 6 chiffres du code.',
-      );
+    if (!/^\d{6}$/.test(value)) {
+      setError('Saisissez les 6 chiffres du code reçu par e-mail.');
       return;
     }
     setSubmitting(true);
     try {
-      const valid = usingRecovery ? await redeemRecoveryCode(value) : await verifyTwoFactor(value);
+      const valid = await verifyTwoFactor(value);
       if (!valid) {
-        setError(
-          usingRecovery
-            ? 'Ce code de secours est incorrect ou a déjà été utilisé.'
-            : 'Code incorrect ou expiré. Saisissez le code affiché actuellement dans votre application.',
-        );
+        setError('Code incorrect. Vérifiez le dernier e-mail reçu et réessayez.');
         setCode('');
         return;
       }
-      if (usingRecovery) {
-        toast.info(
-          'Code de secours utilisé : reconfigurez la double authentification depuis « Mon compte ».',
-        );
-      }
-      navigate(usingRecovery ? ROUTES.admin.account : safeRedirect(searchParams.get(REDIRECT_PARAM)), {
-        replace: true,
-      });
+      navigate(safeRedirect(searchParams.get(REDIRECT_PARAM)), { replace: true });
     } catch (failure) {
       setError(getErrorMessage(failure));
+      setCode('');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const resend = async () => {
+    setResending(true);
+    setError(null);
+    try {
+      const next = await resendTwoFactorCode();
+      setDelivery(next);
+      setNow(Date.now());
+      toast.success('Un nouveau code vient de vous être envoyé.');
+    } catch (failure) {
+      if (isDataError(failure, 'rate_limited') && failure.retryAt) {
+        setDelivery((current) => (current ? { ...current, retryAt: failure.retryAt } : current));
+        setNow(Date.now());
+      }
+      setError(getErrorMessage(failure));
+    } finally {
+      setResending(false);
     }
   };
 
@@ -97,49 +116,29 @@ export function Component() {
         aria-labelledby="titre-2fa"
         className="flex flex-col gap-7"
       >
-        <AuthHeading
-          icon={usingRecovery ? <IconKey /> : <IconMobile />}
-          title={usingRecovery ? 'Code de secours' : 'Vérification en deux étapes'}
-          titleId="titre-2fa"
-        >
-          {usingRecovery
-            ? 'Saisissez l’un des codes de secours obtenus lors de la configuration. Chaque code ne sert qu’une fois.'
-            : 'Saisissez le code à 6 chiffres affiché dans votre application d’authentification.'}
+        <AuthHeading icon={<IconEmail />} title="Vérification en deux étapes" titleId="titre-2fa">
+          {delivery.destination ? (
+            <>
+              Un code à 6 chiffres vient d’être envoyé à <strong>{delivery.destination}</strong>. Il est
+              valable 10 minutes.
+            </>
+          ) : (
+            'Saisissez le code à 6 chiffres reçu par e-mail.'
+          )}
         </AuthHeading>
         <fieldset className="flex flex-col gap-2.5">
-          <legend className="mb-2.5 text-[14.5px] font-semibold">
-            {usingRecovery ? 'Code de secours' : 'Code de vérification'}
-          </legend>
-          {usingRecovery ? (
-            <Input
-              value={code}
-              onChange={(event) => {
-                setCode(event.target.value.toUpperCase());
-                setError(null);
-              }}
-              autoComplete="one-time-code"
-              autoCapitalize="characters"
-              spellCheck={false}
-              placeholder="ABCD-EFGH"
-              aria-label="Code de secours"
-              aria-invalid={error !== null || undefined}
-              aria-describedby={error ? errorId : undefined}
-              className="font-mono tracking-[0.12em]"
-            />
-          ) : (
-            <OneTimeCodeInput
-              value={code}
-              onChange={(value) => {
-                setCode(value);
-                setError(null);
-              }}
-              invalid={error !== null}
-              describedBy={error ? errorId : undefined}
-            />
-          )}
+          <legend className="mb-2.5 text-[14.5px] font-semibold">Code de vérification</legend>
+          <OneTimeCodeInput
+            value={code}
+            onChange={(value) => {
+              setCode(value);
+              setError(null);
+            }}
+            invalid={error !== null}
+            describedBy={error ? errorId : undefined}
+          />
           {error ? <FieldError id={errorId}>{error}</FieldError> : null}
         </fieldset>
-        {usingRecovery ? null : <Checkbox label="Faire confiance à cet appareil pendant 30 jours" />}
         <Button
           type="submit"
           size="lg"
@@ -151,8 +150,13 @@ export function Component() {
           Vérifier
         </Button>
         <div className="flex flex-wrap justify-between gap-3 text-[15px]">
-          <button type="button" className="font-semibold text-brand hover:underline" onClick={switchMode}>
-            {usingRecovery ? 'Utiliser l’application d’authentification' : 'Utiliser un code de secours'}
+          <button
+            type="button"
+            className="font-semibold text-brand hover:underline disabled:cursor-not-allowed disabled:text-muted disabled:no-underline"
+            disabled={wait > 0 || resending}
+            onClick={() => void resend()}
+          >
+            {wait > 0 ? `Renvoyer le code (${formatWait(wait)})` : 'Renvoyer le code'}
           </button>
           <button
             type="button"
@@ -162,6 +166,10 @@ export function Component() {
             Changer de compte
           </button>
         </div>
+        <p className="text-[13.5px] text-muted">
+          Rien reçu ? Vérifiez vos courriers indésirables. Ne communiquez jamais ce code : l’équipe
+          LASISTANT.PRO ne vous le demandera pas.
+        </p>
       </form>
     </>
   );

@@ -1,7 +1,7 @@
 import { ROUTES } from '@/config/routes';
 import { readStorage, removeStorage, writeStorage } from '@/lib/storage';
 import type { AuthSession } from '@/types';
-import type { AuthBackend, ResetLinkKind } from '../contracts';
+import type { AuthBackend, ResetLinkKind, TwoFactorDelivery } from '../contracts';
 import { DataError } from '../errors';
 import { consumeAuthRedirect, getSupabase, hasStoredAuthSession, setSessionPersistence } from './client';
 import { toDataError } from './errors';
@@ -11,9 +11,9 @@ import { invokeFunction } from './functions';
  * Authentification du back-office avec Supabase Auth.
  *
  * - Mot de passe : `signInWithPassword` ; un compte sans fiche d'équipe active est refusé.
- * - Double authentification (TOTP) : exigée dès qu'un facteur est configuré ; la session
- *   n'atteint le niveau « aal2 » qu'après le code, et la base refuse tout accès aux
- *   données en dessous de ce niveau (voir `app_private.staff_role`).
+ * - Double authentification : après le mot de passe, un code à 6 chiffres est envoyé par
+ *   e-mail (Edge Function « code-connexion », service Resend). La base ne donne accès aux
+ *   données qu'aux sessions vérifiées par ce code (voir `app_private.staff_role`).
  * - Liens reçus par e-mail (réinitialisation, invitation) : jetons lus dans l'adresse.
  */
 
@@ -39,7 +39,19 @@ async function memberSession(userId: string): Promise<AuthSession | null> {
   };
 }
 
-/** Session complète (niveau requis atteint) : la connexion est enregistrée. */
+/** Envoi d'un code par e-mail ; une limitation en cours n'empêche pas d'afficher l'écran du code. */
+async function sendCode(): Promise<TwoFactorDelivery> {
+  try {
+    return await invokeFunction<TwoFactorDelivery>('code-connexion', { action: 'envoyer' });
+  } catch (error) {
+    if (error instanceof DataError && error.code === 'rate_limited') {
+      return { destination: null, retryAt: error.retryAt };
+    }
+    throw error;
+  }
+}
+
+/** Session complète (code vérifié) : la connexion est enregistrée. */
 async function completeSignIn(): Promise<AuthSession | null> {
   const { data } = await getSupabase().auth.getUser();
   if (!data.user) return null;
@@ -75,34 +87,30 @@ export const supabaseAuthBackend: AuthBackend = {
       return { status: 'inactive' };
     }
 
-    const { data: level } = await auth.mfa.getAuthenticatorAssuranceLevel();
-    if (level?.nextLevel === 'aal2' && level.currentLevel !== 'aal2') return { status: 'two-factor' };
-
-    const session = await completeSignIn();
-    return session ? { status: 'authenticated', session } : { status: 'inactive' };
+    return { status: 'two-factor', delivery: await sendCode() };
   },
 
   async verifyTwoFactor(code) {
-    const auth = getSupabase().auth;
-    const { data: factors, error } = await auth.mfa.listFactors();
-    if (error) throw toDataError(error);
-    const factor = factors.totp[0];
-    if (!factor) return null;
-    const verified = await auth.mfa.challengeAndVerify({ factorId: factor.id, code });
-    if (verified.error) return null;
-    return completeSignIn();
+    const result = await invokeFunction<{ ok: boolean; reason?: string }>('code-connexion', {
+      action: 'verifier',
+      code,
+    });
+    if (result.ok) return completeSignIn();
+    if (result.reason === 'too_many') {
+      throw new DataError('rate_limited', 'Trop d’essais avec ce code. Demandez un nouveau code.');
+    }
+    if (result.reason === 'expired') {
+      throw new DataError('validation', 'Ce code a expiré ou a été remplacé. Demandez un nouveau code.');
+    }
+    return null;
   },
 
-  async redeemRecoveryCode(code) {
-    try {
-      await invokeFunction('equipe', { action: 'code-de-secours', code });
-    } catch (error) {
-      if (error instanceof DataError && error.code === 'validation') return null;
-      throw error;
-    }
-    // Le facteur a été retiré : la session rafraîchie n'exige plus de second code.
-    await getSupabase().auth.refreshSession();
-    return completeSignIn();
+  resendTwoFactorCode: () => invokeFunction<TwoFactorDelivery>('code-connexion', { action: 'envoyer' }),
+
+  async isSecondFactorVerified() {
+    const { data, error } = await getSupabase().rpc('second_factor_verified');
+    if (error) return false;
+    return data === true;
   },
 
   async requestPasswordReset(email) {
@@ -155,7 +163,7 @@ export const supabaseAuthBackend: AuthBackend = {
     }
     await supabase.rpc('mark_password_changed');
     removeStorage(RESET_LINK_KEY, 'session');
-    // Connexion complète ensuite (avec la double authentification si elle est configurée).
+    // Connexion complète ensuite (mot de passe, puis code reçu par e-mail).
     await supabase.auth.signOut({ scope: 'local' });
     return { ok: true };
   },

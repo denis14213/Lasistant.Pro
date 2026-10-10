@@ -6,7 +6,7 @@ import { readTable } from './database';
 import { mockTeamDirectory } from './repositories/team.repository';
 
 /**
- * Authentification simulée (tests automatisés) : mot de passe et code de démonstration,
+ * Authentification simulée (tests automatisés) : mot de passe et code « reçu par e-mail » de démonstration,
  * lien de réinitialisation conservé dans l'onglet. Les règles d'interface (verrouillage,
  * double authentification, lien à usage unique) sont les mêmes qu'en production.
  */
@@ -28,6 +28,15 @@ function sessionFor(user: AdminUser): AuthSession {
   };
 }
 
+/** Envoi simulé du code (le code de démonstration est fixe) ; nouvel envoi possible après 1 min. */
+function demoDelivery(email: string) {
+  const [local = '', domain = ''] = email.split('@');
+  return {
+    destination: local ? `${local.charAt(0)}•••@${domain}` : null,
+    retryAt: new Date(Date.now() + 60_000).toISOString(),
+  };
+}
+
 function resetLinkValid(now = Date.now()): boolean {
   const token = readStorage<{ expiresAt: string } | null>(RESET_KEY, null, 'session');
   return token !== null && new Date(token.expiresAt).getTime() > now;
@@ -39,7 +48,7 @@ export const mockAuthBackend: AuthBackend = {
     if (!user || password !== DEMO_PASSWORD) return { status: 'invalid' };
     if (!user.active) return { status: 'inactive' };
     writeStorage(PENDING_USER_KEY, user.id, 'session');
-    return { status: 'two-factor' };
+    return { status: 'two-factor', delivery: demoDelivery(user.email) };
   },
 
   async verifyTwoFactor(code) {
@@ -52,9 +61,14 @@ export const mockAuthBackend: AuthBackend = {
     return sessionFor(user);
   },
 
-  /** Base simulée : aucun code de secours n'est conservé. */
-  async redeemRecoveryCode() {
-    return null;
+  async resendTwoFactorCode() {
+    const userId = readStorage<string | null>(PENDING_USER_KEY, null, 'session');
+    const user = readTable('users').find((item) => item.id === userId);
+    return demoDelivery(user?.email ?? '');
+  },
+
+  async isSecondFactorVerified() {
+    return true;
   },
 
   async requestPasswordReset(email) {

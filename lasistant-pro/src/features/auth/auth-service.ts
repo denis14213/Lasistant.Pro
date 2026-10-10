@@ -1,4 +1,4 @@
-import { authBackend, type PasswordResetOutcome, type ResetLinkKind } from '@/api';
+import { authBackend, type PasswordResetOutcome, type ResetLinkKind, type TwoFactorDelivery } from '@/api';
 import { readStorage, removeStorage, writeStorage } from '@/lib/storage';
 import type { AuthSession } from '@/types';
 
@@ -26,11 +26,12 @@ interface AttemptsState {
 
 interface PendingTwoFactor {
   remember: boolean;
+  delivery: TwoFactorDelivery;
 }
 
 export type LoginResult =
   | { status: 'authenticated'; session: AuthSession; remember: boolean }
-  | { status: 'two-factor' }
+  | { status: 'two-factor'; delivery: TwoFactorDelivery }
   | { status: 'invalid'; remainingAttempts: number }
   | { status: 'locked'; lockedUntil: string }
   | { status: 'inactive' };
@@ -68,17 +69,25 @@ export async function attemptLogin(email: string, password: string, remember: bo
       return { status: 'inactive' };
     case 'two-factor':
       removeStorage(ATTEMPTS_KEY, 'session');
-      writeStorage<PendingTwoFactor>(PENDING_KEY, { remember }, 'session');
-      return { status: 'two-factor' };
+      writeStorage<PendingTwoFactor>(PENDING_KEY, { remember, delivery: outcome.delivery }, 'session');
+      return { status: 'two-factor', delivery: outcome.delivery };
     case 'authenticated':
       removeStorage(ATTEMPTS_KEY, 'session');
       return { status: 'authenticated', session: outcome.session, remember };
   }
 }
 
-/** Mot de passe vérifié, code de double authentification attendu. */
-export function hasPendingTwoFactor(): boolean {
-  return readStorage<PendingTwoFactor | null>(PENDING_KEY, null, 'session') !== null;
+/** Mot de passe vérifié, code reçu par e-mail attendu : envoi en cours, ou null. */
+export function pendingTwoFactorDelivery(): TwoFactorDelivery | null {
+  return readStorage<PendingTwoFactor | null>(PENDING_KEY, null, 'session')?.delivery ?? null;
+}
+
+/** Nouveau code envoyé par e-mail (la date du prochain envoi possible est conservée). */
+export async function resendTwoFactorCode(): Promise<TwoFactorDelivery> {
+  const pending = readStorage<PendingTwoFactor | null>(PENDING_KEY, null, 'session');
+  const delivery = await authBackend.resendTwoFactorCode();
+  if (pending) writeStorage<PendingTwoFactor>(PENDING_KEY, { ...pending, delivery }, 'session');
+  return delivery;
 }
 
 async function finishTwoFactor(
@@ -92,14 +101,9 @@ async function finishTwoFactor(
   return { session, remember: pending.remember };
 }
 
-/** Vérifie le code à usage unique de l'application d'authentification et ouvre la session. */
+/** Vérifie le code reçu par e-mail et ouvre la session. */
 export function verifyTwoFactor(code: string) {
   return finishTwoFactor(() => authBackend.verifyTwoFactor(code));
-}
-
-/** Connexion avec un code de secours (la double authentification sera à reconfigurer). */
-export function redeemRecoveryCode(code: string) {
-  return finishTwoFactor(() => authBackend.redeemRecoveryCode(code));
 }
 
 /** Abandon de la connexion en cours (changement de compte). */

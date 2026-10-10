@@ -1,4 +1,4 @@
-import { DEMO_PASSWORD, DEMO_TWO_FACTOR_CODE, RECOVERY_CODES_COUNT } from '@/content/demo/team';
+import { DEMO_PASSWORD } from '@/content/demo/team';
 import type { AccountActivity, AccountSession, AdminUser, NotificationPreferences } from '@/types';
 import type { AccountRepository } from '../../contracts';
 import { DATA_ERROR_MESSAGES, DataError } from '../../errors';
@@ -8,12 +8,8 @@ import { simulateRead, simulateWrite } from '../network';
 /**
  * Compte de la personne connectée (« Mon compte ») : profil, sécurité, notifications.
  *
- * Phase 2 : le mot de passe et la double authentification passeront par Supabase Auth
- * (`updateUser`, `mfa`) ; le profil et les préférences restent dans la table « admin_users ».
+ * La double authentification se fait par code envoyé par e-mail (aucune configuration).
  */
-
-/** Clé de configuration manuelle affichée en démonstration (aucun secret réel). */
-const DEMO_SETUP_KEY = 'LASI STAN TPRO DEMO 2026';
 
 /** Nombre d'actions affichées dans « Activité récente ». */
 const ACTIVITY_LIMIT = 6;
@@ -22,24 +18,6 @@ function findUser(tables: MockTables, userId: string): AdminUser {
   const user = tables.users.find((item) => item.id === userId);
   if (!user) throw new DataError('not_found', DATA_ERROR_MESSAGES.not_found);
   return user;
-}
-
-function setTwoFactor(userId: string, enabled: boolean): AdminUser {
-  return mutateTables((tables) => {
-    const user = findUser(tables, userId);
-    user.twoFactorEnabled = enabled;
-    user.twoFactorConfiguredAt = enabled ? new Date().toISOString() : null;
-    user.recoveryCodesRemaining = enabled ? RECOVERY_CODES_COUNT : 0;
-    return user;
-  });
-}
-
-/** Code de secours lisible : « 4F7K-92QD ». */
-function recoveryCode(): string {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const values = crypto.getRandomValues(new Uint32Array(8));
-  const chars = Array.from(values, (value) => alphabet[value % alphabet.length]).join('');
-  return `${chars.slice(0, 4)}-${chars.slice(4)}`;
 }
 
 export const accountRepository: AccountRepository = {
@@ -85,37 +63,6 @@ export const accountRepository: AccountRepository = {
         const user = findUser(tables, userId);
         user.passwordChangedAt = new Date().toISOString();
         return user;
-      }),
-    );
-  },
-
-  async startTwoFactor() {
-    return simulateRead(() => ({ factorId: 'demonstration', qrCode: null, secret: DEMO_SETUP_KEY }));
-  },
-
-  async confirmTwoFactor(userId: string, _factorId: string, code: string): Promise<AdminUser> {
-    return simulateWrite(() => {
-      if (code !== DEMO_TWO_FACTOR_CODE) {
-        throw new DataError(
-          'validation',
-          'Ce code est incorrect ou a expiré. Saisissez le code actuellement affiché par votre application.',
-        );
-      }
-      return setTwoFactor(userId, true);
-    });
-  },
-
-  async disableTwoFactor(userId: string): Promise<AdminUser> {
-    return simulateWrite(() => setTwoFactor(userId, false));
-  },
-
-  /** Nouveaux codes de secours : affichés une seule fois, les anciens deviennent inutilisables. */
-  async regenerateRecoveryCodes(userId: string): Promise<string[]> {
-    return simulateWrite(() =>
-      mutateTables((tables) => {
-        const user = findUser(tables, userId);
-        user.recoveryCodesRemaining = RECOVERY_CODES_COUNT;
-        return Array.from({ length: RECOVERY_CODES_COUNT }, recoveryCode);
       }),
     );
   },

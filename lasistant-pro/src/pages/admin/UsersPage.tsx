@@ -10,7 +10,7 @@ import { Avatar } from '@/components/admin/Avatar';
 import { Seo } from '@/components/seo/Seo';
 import { ActionMenu, Badge, Button, Dialog, IconBox } from '@/components/ui';
 import { Field, Input, RadioCards, Switch } from '@/components/ui/form';
-import { IconCheck, IconInfo, IconRemove, IconSecure, IconSend, IconWarning } from '@/components/ui/icons';
+import { IconCheck, IconInfo, IconRemove, IconSecure, IconSend } from '@/components/ui/icons';
 import { IconCopy, IconUserAdd, IconUserRole } from '@/components/ui/icons-admin';
 import { useSession } from '@/features/auth/auth-context';
 import { useToast } from '@/features/toasts/toast-context';
@@ -141,14 +141,10 @@ export function Component() {
                   <td>
                     {user.invitationSentAt && !user.lastLoginAt ? (
                       <span className="text-muted">—</span>
-                    ) : user.twoFactorEnabled ? (
+                    ) : (
                       <span className="flex items-center gap-1.5 text-[13.5px] font-medium text-success">
                         <IconSecure className="size-4" aria-hidden />
-                        Activée
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1.5 text-[13.5px] font-semibold text-gold-dark">
-                        <IconWarning className="size-4" aria-hidden />À activer
+                        Code par e-mail
                       </span>
                     )}
                   </td>

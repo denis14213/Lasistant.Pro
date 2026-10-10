@@ -79,12 +79,3 @@ export interface InvitationResult {
   emailSent: boolean;
   invitationLink: string | null;
 }
-
-/** Configuration de l'application d'authentification (double authentification). */
-export interface TwoFactorEnrollment {
-  factorId: string;
-  /** QR code à scanner (image SVG en data URL), absent en démonstration */
-  qrCode: string | null;
-  /** Clé à saisir manuellement si le QR code ne peut pas être scanné */
-  secret: string;
-}

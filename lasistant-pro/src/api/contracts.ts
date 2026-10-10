@@ -22,7 +22,6 @@ import type {
   Service,
   ServiceKind,
   SiteSettings,
-  TwoFactorEnrollment,
 } from '@/types';
 import type { PageContents, PageKey } from '@/content/pages';
 
@@ -135,13 +134,6 @@ export interface AccountRepository {
   updateProfile(userId: string, profile: { name: string; email: string }): Promise<AdminUser>;
   updateNotifications(userId: string, patch: Partial<NotificationPreferences>): Promise<AdminUser>;
   changePassword(userId: string, current: string, next: string): Promise<AdminUser>;
-  /** Prépare l'application d'authentification (QR code et clé de configuration). */
-  startTwoFactor(userId: string): Promise<TwoFactorEnrollment>;
-  /** Active la double authentification après vérification d'un premier code. */
-  confirmTwoFactor(userId: string, factorId: string, code: string): Promise<AdminUser>;
-  disableTwoFactor(userId: string): Promise<AdminUser>;
-  /** Nouveaux codes de secours : affichés une seule fois, les anciens deviennent inutilisables. */
-  regenerateRecoveryCodes(userId: string): Promise<string[]>;
   listSessions(userId: string): Promise<AccountSession[]>;
   /** Déconnecte une session, ou toutes les autres sessions si aucun identifiant n'est donné. */
   revokeSessions(userId: string, sessionId?: string): Promise<void>;
@@ -213,9 +205,17 @@ export interface DataSource {
 /** Résultat de la vérification du mot de passe (le verrouillage est géré par l'interface). */
 export type SignInOutcome =
   | { status: 'authenticated'; session: AuthSession }
-  | { status: 'two-factor' }
+  | { status: 'two-factor'; delivery: TwoFactorDelivery }
   | { status: 'invalid' }
   | { status: 'inactive' };
+
+/** Envoi du code de connexion par e-mail (double authentification). */
+export interface TwoFactorDelivery {
+  /** Adresse masquée (« a•••n@exemple.com »), ou null si aucun code n'a pu être envoyé */
+  destination: string | null;
+  /** Un nouveau code peut être demandé à partir de cette date (ISO), ou null */
+  retryAt: string | null;
+}
 
 /** Lien reçu par e-mail : réinitialisation du mot de passe ou invitation à rejoindre l'équipe. */
 export type ResetLinkKind = 'recovery' | 'invite';
@@ -226,9 +226,12 @@ export type PasswordResetOutcome =
 export interface AuthBackend {
   /** « remember » : conserver la session sur l'appareil (sinon, seulement dans l'onglet). */
   signIn(email: string, password: string, remember: boolean): Promise<SignInOutcome>;
+  /** Code reçu par e-mail : session ouverte, ou null si le code est incorrect. */
   verifyTwoFactor(code: string): Promise<AuthSession | null>;
-  /** Code de secours : la double authentification est retirée et devra être reconfigurée. */
-  redeemRecoveryCode(code: string): Promise<AuthSession | null>;
+  /** Nouveau code envoyé par e-mail (limité : un par minute, quelques-uns par heure). */
+  resendTwoFactorCode(): Promise<TwoFactorDelivery>;
+  /** La session serveur en cours a-t-elle été vérifiée par le code reçu par e-mail ? */
+  isSecondFactorVerified(): Promise<boolean>;
   /** Réponse identique que le compte existe ou non (pas d'énumération des comptes). */
   requestPasswordReset(email: string): Promise<void>;
   /** Nature du lien par lequel l'écran « Nouveau mot de passe » a été ouvert, ou null s'il n'est plus valable. */

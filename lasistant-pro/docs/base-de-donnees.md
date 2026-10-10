@@ -22,7 +22,7 @@ Le site et le back-office lisent et écrivent toutes leurs données dans le proj
 | `booking_events`              | Historique de chaque demande (tenu par la base)                                                                                            |
 | `internal_notes`              | Notes internes de l’équipe                                                                                                                 |
 | `admin_users`                 | Membres de l’équipe (une ligne par compte Supabase Auth)                                                                                   |
-| `mfa_recovery_codes`          | Empreintes des codes de secours (jamais les codes)                                                                                         |
+| `mfa_recovery_codes`          | Ancien dispositif TOTP (codes de secours), inutilisé depuis la double authentification par e-mail                                          |
 | `activity_log`                | Journal des actions sensibles                                                                                                              |
 | `media`                       | Médiathèque (images publiques et documents privés)                                                                                         |
 | `email_templates`             | Modèles d’e-mails et réponses standards                                                                                                    |
@@ -34,7 +34,7 @@ Les types TypeScript générés sont dans `src/api/supabase/database.types.ts` ;
 
 ## 3. Règles d’accès
 
-`app_private.staff_role()` renvoie le rôle de la personne connectée, ou rien si le compte est inconnu, désactivé, ou si la double authentification configurée n’a pas été validée pour la session (niveau `aal2`).
+`app_private.staff_role()` renvoie le rôle de la personne connectée, ou rien si le compte est inconnu, désactivé, ou si la session n’a pas été vérifiée par le code de connexion envoyé par e-mail (`app_private.session_verified()`, table `app_private.verified_sessions`).
 
 | Rôle           | Lecture                                                                                  | Écriture                                                            |
 | -------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
@@ -103,7 +103,9 @@ select template_key, recipient, status, attempts, last_error, sent_at from publi
 ## 6. Authentification
 
 - Connexion par e-mail et mot de passe (Supabase Auth), session dans l’onglet ou sur l’appareil (« Rester connecté »).
-- Double authentification TOTP (application d’authentification) ; tant qu’elle n’est pas validée, la base ne renvoie aucune donnée.
+- Double authentification par **code envoyé par e-mail** (Edge Function `code-connexion`, envoi par Resend depuis `securite@adbm-school.com`) : après le mot de passe, un code à 6 chiffres, valable 10 minutes et lié à la session, est envoyé à l’adresse du compte. Tant qu’il n’est pas validé, la base ne renvoie aucune donnée. Une session vérifiée le reste 30 jours au plus (déconnexion comprise).
+- Code conservé sous forme d’empreinte salée (`app_private.login_codes`), 5 essais au plus. Limitations appliquées par la base (`login_code_issue`) : 1 envoi par minute, 5 par heure et par compte, 20 par heure et par adresse IP ; après 10 essais erronés en une heure, plus aucun code pendant une heure.
+- Chaque compte doit donc avoir une **adresse e-mail réelle** : sans accès à cette boîte, la connexion est impossible. En dépannage, les codes envoyés apparaissent dans le tableau de bord Resend (Emails).
 - Réinitialisation du mot de passe et invitations par lien e-mail : écran `/admin/reinitialiser-mot-de-passe`.
 - Les inscriptions publiques n’ouvrent aucun accès : un compte sans fiche `admin_users` active n’a aucun droit.
 

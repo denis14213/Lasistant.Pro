@@ -819,8 +819,15 @@ export type Database = {
         Returns: undefined;
       };
       outbox_provider_key: { Args: { p_token: string }; Returns: string };
+      login_code_issue: { Args: { p_ip: string; p_session: string; p_user: string }; Returns: Json };
+      login_code_verify: {
+        Args: { p_code: string; p_session: string; p_user: string; p_validity_hours?: number };
+        Returns: Json;
+      };
+      login_mailer_key: { Args: never; Returns: string };
       record_login: { Args: never; Returns: undefined };
       regenerate_recovery_codes: { Args: never; Returns: string[] };
+      second_factor_verified: { Args: never; Returns: boolean };
       submit_booking: { Args: { p_booking: Json }; Returns: Json };
       taken_slots: { Args: never; Returns: { slot_date: string; slot_time: string }[] };
     };

@@ -1,0 +1,23 @@
+# En-têtes HTTP du site publié sur Cloudflare (Workers avec fichiers statiques, ou Pages).
+# La politique de sécurité du contenu (CSP) est ajoutée à index.html à la compilation :
+# voir « contentSecurityPolicy » dans vite.config.ts (elle suit l'adresse Supabase configurée).
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000
+
+# Fichiers produits par Vite : leur nom change à chaque version, ils sont conservés un an.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Back-office : jamais indexé, jamais conservé par un cache intermédiaire.
+/admin
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store

@@ -24,9 +24,9 @@ import {
 } from '@/components/ui';
 import { IconArrowRight, IconClose, IconSearch } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
-import { ARTICLES_CONTENT } from '@/content/pages/public';
 import { ArticleCard, FeaturedArticle } from '@/features/articles/ArticleCard';
 import { useCategoryLookup } from '@/features/articles/useCategoryLookup';
+import { usePageContent } from '@/features/content/usePageContent';
 import { matchesQuery, pluralize } from '@/lib/text';
 
 export const loader = () => prefetch(publishedArticlesQuery(), categoriesQuery(), categoriesQuery(true));
@@ -38,7 +38,7 @@ const PARAM = { category: 'categorie', query: 'q', page: 'page' } as const;
 
 /** Espace infos : publications, filtres par catégorie, recherche et pagination (cahier des charges § 6.8). */
 export function Component() {
-  const content = ARTICLES_CONTENT;
+  const content = usePageContent('espace-infos');
   const { data: articles } = useSuspenseQuery(publishedArticlesQuery());
   const { data: categories } = useSuspenseQuery(categoriesQuery());
   const categoryOf = useCategoryLookup();

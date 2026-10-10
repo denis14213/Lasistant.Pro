@@ -2,6 +2,8 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { publishedArticlesQuery, servicesQuery } from '@/api';
 import { BrandSwoosh } from '@/components/brand/BrandSwoosh';
 import { LogoMark } from '@/components/brand/Logo';
+import { FeatureGrid } from '@/components/marketing/FeatureGrid';
+import { FieldGallery } from '@/components/marketing/FieldGallery';
 import { StepsTimeline } from '@/components/marketing/Steps';
 import { ValuesStrip } from '@/components/marketing/ValuesStrip';
 import {
@@ -19,11 +21,10 @@ import {
 } from '@/components/ui';
 import { IconArrowRight } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
-import { AUDIENCES, JOURNEY_STEPS, SUPPORT_QUOTE, TEAM_SIGNATURE } from '@/content/brand';
-import { HOME_CONTENT } from '@/content/pages/home';
 import { ArticleCard } from '@/features/articles/ArticleCard';
 import { useCategoryLookup } from '@/features/articles/useCategoryLookup';
 import { ContactChannels } from '@/features/contact/ContactChannels';
+import { usePageContent } from '@/features/content/usePageContent';
 import { QuickRequestForm } from '@/features/requests/QuickRequestForm';
 import { ServiceCard } from '@/features/services/ServiceCard';
 
@@ -32,7 +33,7 @@ import { ServiceCard } from '@/features/services/ServiceCard';
  */
 
 export function HomeServices() {
-  const { services } = HOME_CONTENT;
+  const { services } = usePageContent('accueil');
   const { data } = useSuspenseQuery(servicesQuery());
   const pages = data.filter((service) => service.kind === 'page');
   return (
@@ -61,15 +62,58 @@ export function HomeServices() {
   );
 }
 
+/** Moments réels d'accompagnement : aéroport, accueil, consultations, déplacements. */
+export function HomeField() {
+  const { field } = usePageContent('accueil');
+  return (
+    <Section aria-labelledby="accueil-terrain">
+      <Container>
+        <SectionHeader
+          eyebrow={field.eyebrow}
+          titleId="accueil-terrain"
+          title={<AccentTitle value={field.title} />}
+          aside={<Lead className="text-lg md:text-lg">{field.lead}</Lead>}
+        />
+        <FieldGallery items={field.items} layout="mosaic" />
+      </Container>
+    </Section>
+  );
+}
+
+/** Raisons concrètes de faire confiance à l'équipe. */
+export function HomeTrust() {
+  const { trust } = usePageContent('accueil');
+  return (
+    <Section tone="paper" aria-labelledby="accueil-confiance">
+      <Container>
+        <SectionHeader
+          eyebrow={trust.eyebrow}
+          titleId="accueil-confiance"
+          title={<AccentTitle value={trust.title} />}
+          aside={
+            <>
+              <Lead className="text-lg md:text-lg">{trust.lead}</Lead>
+              <TextLink to={ROUTES.about} arrow>
+                {trust.linkLabel}
+              </TextLink>
+            </>
+          }
+        />
+        <FeatureGrid items={trust.items} columns={3} />
+      </Container>
+    </Section>
+  );
+}
+
 export function HomeEngagement() {
-  const { engagement } = HOME_CONTENT;
+  const { engagement } = usePageContent('accueil');
+  const { supportQuote, signature } = usePageContent('identite');
   return (
     <Section aria-labelledby="accueil-engagement">
       <Container className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-22">
         <div className="relative h-[400px] overflow-hidden rounded-[24px_24px_160px_24px] bg-mist md:h-[640px] md:rounded-[32px_32px_240px_32px]">
           <ResponsiveImage
             image={engagement.image}
-            alt="Deux mains jointes en signe de soutien"
             sizes="(min-width: 1024px) 560px, 100vw"
             className="size-full object-cover"
           />
@@ -95,10 +139,10 @@ export function HomeEngagement() {
               “
             </span>
             <div>
-              <blockquote className="text-[17px] text-ink-soft italic">{SUPPORT_QUOTE}</blockquote>
+              <blockquote className="text-[17px] text-ink-soft italic">{supportQuote}</blockquote>
               <figcaption className="mt-3.5 flex items-center gap-3 text-sm font-semibold">
                 <LogoMark size={30} />
-                {TEAM_SIGNATURE}
+                {signature}
               </figcaption>
             </div>
           </figure>
@@ -112,7 +156,8 @@ export function HomeEngagement() {
 }
 
 export function HomeJourney() {
-  const { journey } = HOME_CONTENT;
+  const { journey } = usePageContent('accueil');
+  const { journey: steps } = usePageContent('identite');
   return (
     <Section tone="night" className="relative overflow-hidden" aria-labelledby="accueil-parcours">
       <BrandSwoosh className="absolute -top-30 -right-40 size-[620px] opacity-12" />
@@ -128,7 +173,7 @@ export function HomeJourney() {
             </Lead>
           }
         />
-        <StepsTimeline steps={JOURNEY_STEPS} />
+        <StepsTimeline steps={steps} />
         <div className="mt-14 flex flex-wrap items-center justify-between gap-6 border-t border-white/12 pt-10 md:mt-18">
           <p className="text-xl font-medium tracking-[-0.01em]">{journey.ctaText}</p>
           <div className="flex flex-wrap gap-3 max-md:*:w-full">
@@ -146,7 +191,8 @@ export function HomeJourney() {
 }
 
 export function HomeAudiences() {
-  const { audiences } = HOME_CONTENT;
+  const { audiences } = usePageContent('accueil');
+  const { audiences: profiles } = usePageContent('identite');
   return (
     <Section aria-labelledby="accueil-publics">
       <Container className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-20">
@@ -159,14 +205,13 @@ export function HomeAudiences() {
           <div className="h-[340px] overflow-hidden rounded-[28px_140px_28px_28px]">
             <ResponsiveImage
               image={audiences.image}
-              alt="Une étudiante souriante devant un bâtiment universitaire"
               sizes="(min-width: 1024px) 460px, 100vw"
               className="size-full object-cover object-[center_30%]"
             />
           </div>
         </div>
         <ul>
-          {AUDIENCES.map((audience) => (
+          {profiles.map((audience) => (
             <li
               key={audience.id}
               className="group grid grid-cols-[48px_minmax(0,1fr)] items-center gap-x-4 gap-y-3 border-b border-line py-5.5 first:border-t md:grid-cols-[56px_minmax(0,1fr)_auto] md:gap-x-7 md:py-7"
@@ -193,7 +238,7 @@ export function HomeAudiences() {
 }
 
 export function HomeValues() {
-  const { values } = HOME_CONTENT;
+  const { values } = usePageContent('accueil');
   return (
     <Section tone="paper" spacing="md" bordered className="border-b border-line" aria-labelledby="accueil-valeurs">
       <Container>
@@ -210,7 +255,7 @@ export function HomeValues() {
 }
 
 export function HomeNews() {
-  const { news } = HOME_CONTENT;
+  const { news } = usePageContent('accueil');
   const { data: articles } = useSuspenseQuery(publishedArticlesQuery());
   const categoryOf = useCategoryLookup();
   const latest = articles.slice(0, 3);
@@ -239,7 +284,7 @@ export function HomeNews() {
 }
 
 export function HomeContact() {
-  const { contact } = HOME_CONTENT;
+  const { contact } = usePageContent('accueil');
   return (
     <Section className="pt-0 md:pt-0" aria-labelledby="accueil-contact">
       <Container>

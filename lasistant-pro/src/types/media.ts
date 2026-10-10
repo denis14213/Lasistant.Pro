@@ -9,6 +9,11 @@ export interface ImageAsset {
   width: number;
   height: number;
   alt: string;
+  /**
+   * Point d'intérêt de la photo (valeur CSS « object-position », ex. « 20% 60% ») : il reste
+   * visible quand la photo est recadrée pour remplir son emplacement. Centre par défaut.
+   */
+  focus?: string;
 }
 
 /**

@@ -1,14 +1,18 @@
 import { queryOptions } from '@tanstack/react-query';
 import type { EmailTemplateKey } from '@/types';
-import { accountRepository } from './repositories/account.repository';
-import { articlesRepository, categoriesRepository } from './repositories/articles.repository';
-import { bookingsRepository } from './repositories/bookings.repository';
-import { emailTemplatesRepository } from './repositories/email-templates.repository';
-import { faqRepository } from './repositories/faq.repository';
-import { mediaRepository } from './repositories/media.repository';
-import { servicesRepository } from './repositories/services.repository';
-import { settingsRepository } from './repositories/settings.repository';
-import { teamRepository } from './repositories/team.repository';
+import {
+  accountRepository,
+  articlesRepository,
+  bookingsRepository,
+  categoriesRepository,
+  emailTemplatesRepository,
+  faqRepository,
+  mediaRepository,
+  pagesRepository,
+  servicesRepository,
+  settingsRepository,
+  teamRepository,
+} from './repositories';
 
 /**
  * Requêtes de lecture (TanStack Query).
@@ -31,6 +35,7 @@ export const queryKeys = {
   account: ['account'] as const,
   media: ['media'] as const,
   emailTemplates: ['email-templates'] as const,
+  pages: ['pages'] as const,
 };
 
 export const settingsQuery = () =>
@@ -86,10 +91,11 @@ export const bookingQuery = (id: string) =>
     queryFn: () => bookingsRepository.getById(id),
   });
 
-export const bookingByReferenceQuery = (reference: string) =>
+/** Récapitulatif public d'une demande (page de confirmation) : référence et clé secrète. */
+export const bookingConfirmationQuery = (reference: string, key: string) =>
   queryOptions({
-    queryKey: [...queryKeys.bookings, 'reference', reference],
-    queryFn: () => bookingsRepository.getByReference(reference),
+    queryKey: [...queryKeys.bookings, 'confirmation', reference, key],
+    queryFn: () => bookingsRepository.getConfirmation(reference, key),
   });
 
 export const bookingEventsQuery = (id: string) =>
@@ -142,3 +148,11 @@ export const accountActivityQuery = (userId: string) =>
     queryFn: () => accountRepository.activity(userId),
     staleTime: 0,
   });
+
+/** Contenus de toutes les pages : préchargés avec les réglages, utilisés partout (pied de page…). */
+export const pageContentsQuery = () =>
+  queryOptions({ queryKey: [...queryKeys.pages, 'contents'], queryFn: () => pagesRepository.getAll() });
+
+/** Dernières modifications des pages (back-office). */
+export const pagesQuery = () =>
+  queryOptions({ queryKey: [...queryKeys.pages, 'list'], queryFn: () => pagesRepository.list() });

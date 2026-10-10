@@ -27,6 +27,8 @@ export const PREVIEW_BOOKING: Booking = {
     'Bonjour, je souhaite poursuivre un traitement en Tunisie et j’aurais besoin d’aide pour organiser mon séjour et trouver un logement pour moi et ma fille. Pouvez-vous me rappeler en fin de matinée ?',
   housing: null,
   attachmentName: null,
+  attachmentPath: null,
+  confirmationKey: 'exemple',
   status: 'nouveau',
   assigneeId: null,
   consentAt: '2026-10-02T08:42:00.000Z',

@@ -24,6 +24,7 @@ export function ResponsiveImage({
   alt,
   sizes = '100vw',
   priority = false,
+  style,
   ...props
 }: ResponsiveImageProps) {
   const asset = typeof image === 'string' ? resolveImage(image, alt) : image;
@@ -38,6 +39,7 @@ export function ResponsiveImage({
       loading={priority ? 'eager' : 'lazy'}
       fetchPriority={priority ? 'high' : undefined}
       decoding="async"
+      style={asset.focus ? { objectPosition: asset.focus, ...style } : style}
       {...props}
     />
   );

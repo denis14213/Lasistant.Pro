@@ -1,4 +1,5 @@
 import type { AccentText } from '@/types';
+import { COOKIE_FAQ } from '../cookies';
 
 /**
  * Contenus des autres pages publiques : réservation, confirmation, contact,
@@ -158,6 +159,7 @@ export const COOKIES_PAGE_CONTENT = {
     title: { start: 'Gestion des', accent: 'cookies' } satisfies AccentText,
     lead: 'Choisissez à tout moment les cookies que vous acceptez. Vos choix s’appliquent à ce navigateur et à cet appareil.',
   },
+  faq: COOKIE_FAQ,
 } as const;
 
 export const SITEMAP_CONTENT = {

@@ -1,12 +1,13 @@
 import { ROUTES } from '@/config/routes';
-import { PRIVACY_POLICY } from '@/content/legal';
+import { usePageContent } from '@/features/content/usePageContent';
 import { LegalDocumentView } from '@/features/legal/LegalDocumentView';
 
 /** Politique de confidentialité (cahier des charges § 6.12 et § 10). */
 export function Component() {
+  const legalDocument = usePageContent('confidentialite');
   return (
     <LegalDocumentView
-      document={PRIVACY_POLICY}
+      document={legalDocument}
       path={ROUTES.privacy}
       seo={{
         title: 'Politique de confidentialité',

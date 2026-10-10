@@ -67,7 +67,7 @@ export const LEGAL_NOTICE: LegalDocument = {
       blocks: [
         {
           type: 'markdown',
-          text: 'Photographies d’illustration : Unsplash (licence Unsplash). Les visuels définitifs seront fournis ou validés par LASISTANT.PRO avant la mise en production.',
+          text: 'Photographies des accompagnements, de l’équipe et des objets de l’agence : LASISTANT.PRO. Photographies des logements : Unsplash (licence Unsplash).',
         },
       ],
     },

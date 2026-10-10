@@ -3,9 +3,8 @@ import type { MediaItem } from '@/types';
 
 /**
  * Téléversement des fichiers de la médiathèque.
- * Les images sont redimensionnées (1 600 px maximum) et converties en WebP dans le navigateur :
- * plus légères pour le site, et assez compactes pour être conservées en phase statique.
- * Phase 2 : envoi vers le stockage Supabase, l'optimisation restant identique.
+ * Les images sont redimensionnées (1 600 px maximum) et converties en WebP dans le navigateur
+ * avant l'envoi vers le stockage Supabase : plus légères pour le site et pour les visiteurs.
  */
 
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -14,10 +13,9 @@ export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const MAX_DIMENSION = 1600;
 
 interface OptimizedImage {
-  dataUrl: string;
+  blob: Blob;
   width: number;
   height: number;
-  sizeBytes: number;
 }
 
 async function optimizeImage(file: File): Promise<OptimizedImage> {
@@ -37,13 +35,7 @@ async function optimizeImage(file: File): Promise<OptimizedImage> {
       0.82,
     ),
   );
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error ?? new Error('Lecture impossible'));
-    reader.readAsDataURL(blob);
-  });
-  return { dataUrl, width, height, sizeBytes: blob.size };
+  return { blob, width, height };
 }
 
 /** Message d'erreur si le fichier est refusé, sinon null. */
@@ -56,13 +48,12 @@ export function checkUpload(file: File, kind: 'image' | 'document'): string | nu
   return null;
 }
 
-/** Ajoute une image publique à la médiathèque (optimisée). */
+/** Ajoute une image publique à la médiathèque (optimisée, stockage public « medias »). */
 export async function uploadImage(file: File, uploadedBy: string): Promise<MediaItem> {
   const optimized = await optimizeImage(file);
   return mediaRepository.add({
+    file: optimized.blob,
     fileName: file.name.replace(/\.[a-z0-9]+$/i, '.webp'),
-    sizeBytes: optimized.sizeBytes,
-    url: optimized.dataUrl,
     width: optimized.width,
     height: optimized.height,
     uploadedBy,
@@ -70,15 +61,11 @@ export async function uploadImage(file: File, uploadedBy: string): Promise<Media
   });
 }
 
-/**
- * Ajoute un document privé. Phase statique : seule la fiche est créée (le contenu n'est pas
- * conservé dans le navigateur) ; phase 2 : stockage privé, accessible aux seuls rôles autorisés.
- */
+/** Ajoute un document privé (stockage privé « documents », accessible aux seuls rôles autorisés). */
 export async function uploadPrivateDocument(file: File, uploadedBy: string): Promise<MediaItem> {
   return mediaRepository.add({
+    file,
     fileName: file.name,
-    sizeBytes: file.size,
-    url: '',
     width: null,
     height: null,
     uploadedBy,

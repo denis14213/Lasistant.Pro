@@ -3,14 +3,14 @@ import { BrandSwoosh } from '@/components/brand/BrandSwoosh';
 import { AccentTitle, ButtonLink, Container, Eyebrow, Lead, ResponsiveImage, Tag } from '@/components/ui';
 import { IconArrowRight, IconCalendar, IconClock, IconConversation } from '@/components/ui/icons';
 import { bookingFor, ROUTES } from '@/config/routes';
-import { HOME_CONTENT } from '@/content/pages/home';
 import { QuickStartBar } from '@/features/booking/QuickStartBar';
+import { usePageContent } from '@/features/content/usePageContent';
 import { primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { formatDuration, phoneHref } from '@/lib/format';
 
 /** Premier écran de l'accueil : promesse, actions principales et démarrage rapide. */
 export function HomeHero() {
-  const { hero } = HOME_CONTENT;
+  const { hero } = usePageContent('accueil');
   const settings = useSiteSettings();
   const phone = primaryPhone(settings);
 
@@ -62,7 +62,6 @@ export function HomeHero() {
             <div className="relative z-[1] h-[380px] overflow-hidden rounded-[170px_24px_24px_24px] bg-mist shadow-float md:absolute md:top-0 md:right-0 md:h-[596px] md:w-[88%] md:rounded-[280px_36px_36px_36px]">
               <ResponsiveImage
                 image={hero.image}
-                alt="Une conseillère échange avec une patiente lors d’un rendez-vous d’accompagnement"
                 priority
                 sizes="(min-width: 1024px) 560px, 100vw"
                 className="size-full object-cover object-[58%_center]"
@@ -71,7 +70,6 @@ export function HomeHero() {
             <figure className="absolute bottom-[84px] left-0 z-[2] hidden w-[224px] rounded-[22px] bg-white p-2 shadow-raised md:block lg:bottom-[236px] xl:bottom-[84px]">
               <ResponsiveImage
                 image={hero.insetImage}
-                alt="Salon lumineux d’un logement meublé"
                 sizes="224px"
                 className="h-[138px] w-full rounded-[15px] object-cover"
               />

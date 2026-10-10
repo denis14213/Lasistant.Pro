@@ -11,15 +11,16 @@ import { Seo } from '@/components/seo/Seo';
 import { ActionMenu, Badge, Button, Dialog, IconBox } from '@/components/ui';
 import { Field, Input, RadioCards, Switch } from '@/components/ui/form';
 import { IconCheck, IconInfo, IconRemove, IconSecure, IconSend, IconWarning } from '@/components/ui/icons';
-import { IconUserAdd, IconUserRole } from '@/components/ui/icons-admin';
+import { IconCopy, IconUserAdd, IconUserRole } from '@/components/ui/icons-admin';
 import { useSession } from '@/features/auth/auth-context';
 import { useToast } from '@/features/toasts/toast-context';
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { useCurrentMinute } from '@/hooks/useNow';
 import { formatRelative } from '@/lib/format';
 import { PERMISSION_ROWS, permissionLevel, ROLE_DESCRIPTIONS, ROLE_LABELS } from '@/lib/permissions';
 import { pluralize } from '@/lib/text';
 import { inviteUserSchema, type InviteUserValues } from '@/lib/validation/admin-forms';
-import type { AdminRole, AdminUser, Tone } from '@/types';
+import type { AdminRole, AdminUser, InvitationResult, Tone } from '@/types';
 
 export const loader = () => prefetch(teamQuery());
 
@@ -45,9 +46,26 @@ export function Component() {
   const [inviting, setInviting] = useState(false);
   const [editingRole, setEditingRole] = useState<AdminUser | null>(null);
   const [nextRole, setNextRole] = useState<AdminRole>('operateur');
+  const [invitationLink, setInvitationLink] = useState<{ email: string; link: string } | null>(null);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: queryKeys.team });
   const onError = (error: Error) => toast.error(getErrorMessage(error));
+
+  /** E-mail envoyé, ou lien d'activation à transmettre si aucun serveur d'e-mails n'est configuré. */
+  const onInvitation = (result: InvitationResult, verb: 'envoyée' | 'renvoyée') => {
+    if (result.emailSent || !result.invitationLink) {
+      toast.success(`Invitation ${verb} à ${result.user.email}.`);
+    } else {
+      setInvitationLink({ email: result.user.email, link: result.invitationLink });
+    }
+    return refresh();
+  };
+
+  const resend = useMutation({
+    mutationFn: (id: string) => teamRepository.resendInvitation(id, session.name),
+    onSuccess: (result) => onInvitation(result, 'renvoyée'),
+    onError,
+  });
 
   const update = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Partial<Pick<AdminUser, 'active' | 'role'>> }) =>
@@ -169,8 +187,8 @@ export function Component() {
                           id: 'invitation',
                           label: 'Renvoyer l’invitation',
                           icon: <IconSend />,
-                          disabled: !user.invitationSentAt || Boolean(user.lastLoginAt),
-                          onSelect: () => toast.success(`Invitation renvoyée à ${user.email}.`),
+                          disabled: !user.invitationSentAt || Boolean(user.lastLoginAt) || resend.isPending,
+                          onSelect: () => resend.mutate(user.id),
                         },
                       ]}
                     />
@@ -236,7 +254,12 @@ export function Component() {
         </PanelFooter>
       </Panel>
 
-      <InviteDialog open={inviting} onClose={() => setInviting(false)} onInvited={refresh} />
+      <InviteDialog
+        open={inviting}
+        onClose={() => setInviting(false)}
+        onInvited={(result) => onInvitation(result, 'envoyée')}
+      />
+      <InvitationLinkDialog value={invitationLink} onClose={() => setInvitationLink(null)} />
 
       <Dialog
         open={editingRole !== null}
@@ -282,7 +305,7 @@ function InviteDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  onInvited: () => Promise<unknown>;
+  onInvited: (result: InvitationResult) => Promise<unknown>;
 }) {
   const session = useSession();
   const toast = useToast();
@@ -299,11 +322,10 @@ function InviteDialog({
 
   const invite = useMutation({
     mutationFn: (values: InviteUserValues) => teamRepository.invite(values.email, values.role, session.name),
-    onSuccess: async (user) => {
-      toast.success(`Invitation envoyée à ${user.email}.`);
+    onSuccess: async (result) => {
       reset();
       onClose();
-      await onInvited();
+      await onInvited(result);
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });
@@ -375,6 +397,59 @@ function InviteDialog({
           />
         </Field>
       </form>
+    </Dialog>
+  );
+}
+
+/**
+ * Lien d'activation à transmettre soi-même : sans serveur d'e-mails configuré dans
+ * Supabase (Authentication › SMTP), l'invitation ne peut pas être envoyée automatiquement.
+ */
+function InvitationLinkDialog({
+  value,
+  onClose,
+}: {
+  value: { email: string; link: string } | null;
+  onClose: () => void;
+}) {
+  const toast = useToast();
+  const copy = useCopyToClipboard();
+  return (
+    <Dialog
+      open={value !== null}
+      onClose={onClose}
+      size="md"
+      title="Invitation prête à transmettre"
+      description={
+        value
+          ? `L’e-mail n’a pas pu être envoyé automatiquement. Transmettez ce lien personnel à ${value.email} : il permet de choisir son mot de passe et d’activer le compte.`
+          : undefined
+      }
+      footer={
+        <>
+          <Button variant="outline" shape="rounded" onClick={onClose}>
+            Fermer
+          </Button>
+          <Button
+            shape="rounded"
+            icon={<IconCopy />}
+            onClick={() =>
+              value &&
+              void copy(value.link).then((ok) =>
+                ok ? toast.success('Lien copié.') : toast.error('Impossible de copier le lien.'),
+              )
+            }
+          >
+            Copier le lien
+          </Button>
+        </>
+      }
+    >
+      {value ? (
+        <p className="rounded-xl border border-line bg-smoke p-3.5 font-mono text-[13px] break-all">
+          {value.link}
+        </p>
+      ) : null}
     </Dialog>
   );
 }

@@ -1,9 +1,9 @@
 import { ButtonLink, Pill, ResponsiveImage, TextLink, TickList } from '@/components/ui';
 import { IconArrowRight, IconInfo } from '@/components/ui/icons';
 import { servicePath } from '@/config/routes';
-import { MEDICAL_DISCLAIMER } from '@/content/brand';
 import { cn } from '@/lib/cn';
 import type { ImageRef, Service } from '@/types';
+import { usePageContent } from '@/features/content/usePageContent';
 
 interface ServiceRowProps {
   service: Service;
@@ -17,6 +17,7 @@ interface ServiceRowProps {
 /** Présentation détaillée d'un service, en alternance texte / image. */
 export function ServiceRow({ service, position, image, reversed = false }: ServiceRowProps) {
   const titleId = `service-${service.slug}`;
+  const { medicalDisclaimer } = usePageContent('identite');
   return (
     <article
       aria-labelledby={titleId}
@@ -70,7 +71,7 @@ export function ServiceRow({ service, position, image, reversed = false }: Servi
         {service.showMedicalDisclaimer ? (
           <p className="flex items-center gap-2 text-[13.5px] leading-[1.45] text-muted">
             <IconInfo className="size-4 shrink-0" aria-hidden />
-            {MEDICAL_DISCLAIMER}
+            {medicalDisclaimer}
           </p>
         ) : null}
       </div>

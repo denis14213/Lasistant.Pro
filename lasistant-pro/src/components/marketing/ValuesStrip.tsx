@@ -1,5 +1,5 @@
-import { BRAND_VALUES } from '@/content/brand';
 import { cn } from '@/lib/cn';
+import { usePageContent } from '@/features/content/usePageContent';
 
 /**
  * Bandeau des quatre valeurs de la marque, séparées par des filets verticaux.
@@ -7,9 +7,10 @@ import { cn } from '@/lib/cn';
  * étapes du parcours, plutôt qu'illustrées par une icône littérale (bulle, bouclier, canapé…).
  */
 export function ValuesStrip() {
+  const { values } = usePageContent('identite');
   return (
     <ul className="grid grid-cols-1 border-t border-line md:grid-cols-2 lg:grid-cols-4">
-      {BRAND_VALUES.map((value, index) => (
+      {values.map((value, index) => (
         <li
           key={value.id}
           className={cn(

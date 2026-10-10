@@ -2,7 +2,7 @@ import { BrandSwoosh } from '@/components/brand/BrandSwoosh';
 import { LogoMark } from '@/components/brand/Logo';
 import { TextAnchor } from '@/components/ui';
 import { IconEmail, IconPhone } from '@/components/ui/icons';
-import { BOOKING_CONTENT } from '@/content/pages/public';
+import { usePageContent } from '@/features/content/usePageContent';
 import { activeEntries, primaryEmail, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { phoneHref } from '@/lib/format';
 
@@ -14,7 +14,7 @@ interface BookingSummaryProps {
 export function BookingSummary({ rows }: BookingSummaryProps) {
   const settings = useSiteSettings();
   const email = primaryEmail(settings);
-  const { summary } = BOOKING_CONTENT;
+  const { summary } = usePageContent('reservation');
 
   return (
     <aside

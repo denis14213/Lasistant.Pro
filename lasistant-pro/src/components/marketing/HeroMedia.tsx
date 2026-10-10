@@ -12,7 +12,8 @@ const FLOAT_TONES = {
 
 interface HeroMediaProps {
   image: ImageRef;
-  alt: string;
+  /** Texte alternatif ; par défaut, celui de la photo affichée */
+  alt?: string;
   /** Cadrage de la photo (ex. « 60% center ») */
   objectPosition?: string;
   /** Pastille flottante posée sur le visuel */

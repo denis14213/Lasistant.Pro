@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useId, useRef, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { allArticlesQuery, exportDatabase, importDatabase, servicesQuery, settingsQuery } from '@/api';
+import { allArticlesQuery, backupRepository, getErrorMessage, servicesQuery, settingsQuery } from '@/api';
 import { prefetch } from '@/app/prefetch';
 import { AdminPage, AdminPageHeader, Panel, PanelBody, PanelHeader } from '@/components/admin/AdminPage';
 import { KeyValueList } from '@/components/admin/KeyValueList';
@@ -67,6 +67,7 @@ function SeoForm({ settings }: { settings: SiteSettings }) {
   const queryClient = useQueryClient();
   const restoreInput = useRef<HTMLInputElement>(null);
   const [pendingRestore, setPendingRestore] = useState<File | null>(null);
+  const [backupBusy, setBackupBusy] = useState<'export' | 'restore' | null>(null);
   const { data: services } = useSuspenseQuery(servicesQuery(true));
   const { data: articles } = useSuspenseQuery(allArticlesQuery());
   const save = useSaveSettings('Réglages enregistrés.');
@@ -109,19 +110,30 @@ function SeoForm({ settings }: { settings: SiteSettings }) {
     });
   });
 
-  const downloadBackup = () => {
-    downloadText(
-      `sauvegarde-lasistant-${new Date().toISOString().slice(0, 10)}.json`,
-      exportDatabase(),
-      'application/json',
-    );
-    saveBackup.mutate({ backups: { ...settings.backups, lastBackupAt: new Date().toISOString() } });
+  const downloadBackup = async () => {
+    setBackupBusy('export');
+    try {
+      downloadText(
+        `sauvegarde-lasistant-${new Date().toISOString().slice(0, 10)}.json`,
+        await backupRepository.export(),
+        'application/json',
+      );
+      saveBackup.mutate({ backups: { ...settings.backups, lastBackupAt: new Date().toISOString() } });
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setBackupBusy(null);
+    }
   };
 
   const restore = async (file: File) => {
     setPendingRestore(null);
-    if (!importDatabase(await file.text())) {
-      toast.error('Ce fichier n’est pas une sauvegarde valide de LASISTANT.PRO.');
+    setBackupBusy('restore');
+    try {
+      await backupRepository.restore(await file.text());
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+      setBackupBusy(null);
       return;
     }
     queryClient.clear();
@@ -397,10 +409,10 @@ function SeoForm({ settings }: { settings: SiteSettings }) {
                   size="sm"
                   shape="rounded"
                   icon={<IconDownload />}
-                  loading={saveBackup.isPending}
-                  disabled={isDirty}
+                  loading={saveBackup.isPending || backupBusy === 'export'}
+                  disabled={isDirty || backupBusy !== null}
                   title={isDirty ? 'Enregistrez d’abord vos modifications' : undefined}
-                  onClick={downloadBackup}
+                  onClick={() => void downloadBackup()}
                 >
                   Télécharger une sauvegarde
                 </Button>
@@ -410,6 +422,8 @@ function SeoForm({ settings }: { settings: SiteSettings }) {
                     size="sm"
                     shape="rounded"
                     icon={<IconHistory />}
+                    loading={backupBusy === 'restore'}
+                    disabled={backupBusy !== null}
                     onClick={() => restoreInput.current?.click()}
                   >
                     Restaurer une sauvegarde
@@ -528,7 +542,7 @@ function SeoForm({ settings }: { settings: SiteSettings }) {
         role="alertdialog"
         size="sm"
         title="Restaurer cette sauvegarde ?"
-        description="Les données actuelles de ce navigateur (demandes, contenus, réglages) seront remplacées par celles de la sauvegarde."
+        description="Les contenus et réglages du site (services, articles, FAQ, modèles d’e-mails, coordonnées, SEO) seront remplacés par ceux de la sauvegarde. Les demandes reçues depuis sont conservées."
         footer={
           <>
             <Button variant="outline" shape="rounded" onClick={() => setPendingRestore(null)}>

@@ -7,6 +7,7 @@ import { IconDesktop, IconMobile, IconTablet } from '@/components/ui/icons-admin
 import { useToast } from '@/features/toasts/toast-context';
 import { useCurrentMinute } from '@/hooks/useNow';
 import { formatRelative } from '@/lib/format';
+import { env } from '@/config/env';
 import { DEVICE_LABELS, describeUserAgent } from '@/lib/user-agent';
 import type { AccountSession } from '@/types';
 
@@ -16,13 +17,18 @@ const DEVICE_ICONS: Record<AccountSession['device'], ReactNode> = {
   tablette: <IconTablet />,
 };
 
-/** Appareils connectés au compte : la session en cours, puis les autres, déconnectables. */
+/**
+ * Appareils connectés au compte : la session en cours, puis les autres, déconnectables.
+ * Avec Supabase Auth, les autres appareils ne sont pas listés : ils se déconnectent en une fois.
+ */
 export function SessionsPanel({ userId }: { userId: string }) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const now = useCurrentMinute();
   const { data: sessions } = useSuspenseQuery(accountSessionsQuery(userId));
   const current = describeUserAgent(navigator.userAgent);
+  // Les autres sessions ne sont pas énumérables en production : l'action reste toujours proposée.
+  const canSignOutOthers = sessions.length > 0 || env.dataSource === 'supabase';
 
   const revoke = useMutation({
     mutationFn: (sessionId?: string) => accountRepository.revokeSessions(userId, sessionId),
@@ -39,7 +45,7 @@ export function SessionsPanel({ userId }: { userId: string }) {
         titleId="sessions-actives"
         title="Sessions actives"
         action={
-          sessions.length > 0 ? (
+          canSignOutOthers ? (
             <button
               type="button"
               disabled={revoke.isPending}
@@ -55,7 +61,7 @@ export function SessionsPanel({ userId }: { userId: string }) {
         <SessionRow
           icon={DEVICE_ICONS[current.device]}
           title={`${DEVICE_LABELS[current.device]} · ${current.browser}`}
-          detail="Tunisie · actif maintenant"
+          detail="Actif maintenant"
           action={<Badge tone="success">Cet appareil</Badge>}
         />
         {sessions.map((session) => (

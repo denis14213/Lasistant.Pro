@@ -15,6 +15,7 @@ export type Permission =
   | 'agenda:manage'
   | 'services:manage'
   | 'articles:manage'
+  | 'pages:manage'
   | 'media:manage'
   | 'private-documents:view'
   | 'settings:manage'
@@ -28,6 +29,7 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   'agenda:manage',
   'services:manage',
   'articles:manage',
+  'pages:manage',
   'media:manage',
   'private-documents:view',
   'settings:manage',
@@ -37,7 +39,14 @@ const ALL_PERMISSIONS: readonly Permission[] = [
 
 const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
   administrateur: ALL_PERMISSIONS,
-  editeur: ['dashboard:view', 'requests:view', 'services:manage', 'articles:manage', 'media:manage'],
+  editeur: [
+    'dashboard:view',
+    'requests:view',
+    'services:manage',
+    'articles:manage',
+    'pages:manage',
+    'media:manage',
+  ],
   operateur: [
     'dashboard:view',
     'requests:view',
@@ -55,7 +64,7 @@ export const ROLE_LABELS: Record<AdminRole, string> = {
 
 export const ROLE_DESCRIPTIONS: Record<AdminRole, string> = {
   administrateur: 'Accès complet, y compris les comptes et les réglages.',
-  editeur: 'Gère les services, les articles et la médiathèque.',
+  editeur: 'Gère les services, les articles, les pages du site et la médiathèque.',
   operateur: 'Consulte et traite les demandes et les rendez-vous.',
 };
 
@@ -86,6 +95,7 @@ export const PERMISSION_ROWS: PermissionRow[] = [
   { label: 'Agenda & disponibilités', manage: 'agenda:manage' },
   { label: 'Services', manage: 'services:manage' },
   { label: 'Articles & catégories', manage: 'articles:manage' },
+  { label: 'Pages du site (textes et visuels)', manage: 'pages:manage' },
   { label: 'Médiathèque', manage: 'media:manage' },
   {
     label: 'Documents privés',

@@ -1,5 +1,12 @@
 import { IconArticles, IconCalendar, IconEmail, IconServices, type AppIcon } from '@/components/ui/icons';
-import { IconDashboard, IconIdentity, IconImages, IconInbox, IconUsers } from '@/components/ui/icons-admin';
+import {
+  IconDashboard,
+  IconIdentity,
+  IconImages,
+  IconInbox,
+  IconPages,
+  IconUsers,
+} from '@/components/ui/icons-admin';
 import type { AdminIconName } from '@/types';
 
 /**
@@ -12,6 +19,7 @@ export const adminNavIcons: Record<AdminIconName, AppIcon> = {
   calendar: IconCalendar,
   services: IconServices,
   articles: IconArticles,
+  pages: IconPages,
   images: IconImages,
   identity: IconIdentity,
   users: IconUsers,

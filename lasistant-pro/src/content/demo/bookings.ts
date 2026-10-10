@@ -309,6 +309,8 @@ export function createBookingsSeed(now = new Date()): BookingsSeed {
       message: spec.message ?? null,
       housing,
       attachmentName: null,
+      attachmentPath: null,
+      confirmationKey: `cle-${spec.number}`,
       status: spec.status,
       assigneeId: spec.assigneeId ?? null,
       consentAt: createdAt,

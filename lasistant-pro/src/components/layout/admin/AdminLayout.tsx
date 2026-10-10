@@ -5,6 +5,7 @@ import { PageLoader } from '@/components/feedback/PageLoader';
 import { RouteFocus, SkipLink } from '@/components/feedback/RouteFocus';
 import { IconButton } from '@/components/ui';
 import { IconClose } from '@/components/ui/icons';
+import { useLiveRequests } from '@/features/admin/realtime/useLiveRequests';
 import { useSession } from '@/features/auth/auth-context';
 import { ForbiddenView } from '@/features/auth/ForbiddenView';
 import { useIdleLogout } from '@/features/auth/useIdleLogout';
@@ -34,6 +35,7 @@ function useRequiredPermission(): Permission | undefined {
  */
 export function AdminLayout() {
   useIdleLogout();
+  useLiveRequests();
   const session = useSession();
   const permission = useRequiredPermission();
   const allowed = !permission || can(session.role, permission);

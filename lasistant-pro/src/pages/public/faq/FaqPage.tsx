@@ -23,7 +23,7 @@ import {
 } from '@/components/ui';
 import { IconArrowRight, IconClose, IconPhone, IconSearch } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
-import { FAQ_CONTENT } from '@/content/pages/public';
+import { usePageContent } from '@/features/content/usePageContent';
 import { FaqAnswer } from '@/features/faq/FaqAnswer';
 import { primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { cn } from '@/lib/cn';
@@ -36,7 +36,7 @@ const BREADCRUMBS = [{ label: 'Accueil', to: ROUTES.home }, { label: 'Questions 
 
 /** Questions fréquentes, par thème et avec recherche (cahier des charges § 6.11). */
 export function Component() {
-  const content = FAQ_CONTENT;
+  const content = usePageContent('faq');
   const { data } = useSuspenseQuery(faqQuery());
   const settings = useSiteSettings();
   const phone = primaryPhone(settings);

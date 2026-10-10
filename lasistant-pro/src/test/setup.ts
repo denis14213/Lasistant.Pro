@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup, configure } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
-import { resetDatabase } from '@/api';
+import { resetDatabase } from '@/api/mock/database';
 import { queryClient } from '@/app/query-client';
 
 /**

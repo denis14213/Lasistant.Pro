@@ -2,6 +2,7 @@ import { BrandSwoosh } from '@/components/brand/BrandSwoosh';
 import { LogoMark } from '@/components/brand/Logo';
 import { ClosingCta } from '@/components/marketing/CallToAction';
 import { FeatureGrid } from '@/components/marketing/FeatureGrid';
+import { FieldGallery } from '@/components/marketing/FieldGallery';
 import { HeroMedia } from '@/components/marketing/HeroMedia';
 import { PageHero } from '@/components/marketing/PageHero';
 import { ValuesStrip } from '@/components/marketing/ValuesStrip';
@@ -22,16 +23,16 @@ import {
 } from '@/components/ui';
 import { IconAddress, IconArrowRight, IconCamera, IconHistory } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
-import { TEAM_SIGNATURE } from '@/content/brand';
-import { ABOUT_CONTENT } from '@/content/pages/about';
 import { MapPlaceholder } from '@/features/contact/MapPlaceholder';
+import { usePageContent } from '@/features/content/usePageContent';
 import { useSiteSettings } from '@/features/settings/useSiteSettings';
 
 const BREADCRUMBS = [{ label: 'Accueil', to: ROUTES.home }, { label: 'À propos' }];
 
 /** Page « À propos » (cahier des charges § 6.6). */
 export function Component() {
-  const content = ABOUT_CONTENT;
+  const content = usePageContent('a-propos');
+  const { signature } = usePageContent('identite');
   const settings = useSiteSettings();
 
   return (
@@ -59,7 +60,6 @@ export function Component() {
         aside={
           <HeroMedia
             image={content.hero.image}
-            alt="Deux femmes échangent autour d’une table lors d’un rendez-vous"
             float={{ icon: <IconAddress />, title: content.hero.floatTitle, text: settings.address.street }}
           />
         }
@@ -79,7 +79,7 @@ export function Component() {
             <span className="flex size-9 items-center justify-center rounded-[10px] bg-white p-1">
               <LogoMark size={26} />
             </span>
-            {TEAM_SIGNATURE}
+            {signature}
           </p>
         </Container>
       </Section>
@@ -114,12 +114,24 @@ export function Component() {
       <Section spacing="md" className="border-b border-line" aria-labelledby="valeurs">
         <Container>
           <div className="mb-10 flex flex-col gap-5">
-            <Eyebrow>Nos valeurs</Eyebrow>
+            <Eyebrow>{content.values.eyebrow}</Eyebrow>
             <h2 id="valeurs" className="text-[32px] leading-[1.15] font-semibold tracking-[-0.028em]">
-              Ce qui guide chacune de nos interventions
+              {content.values.title}
             </h2>
           </div>
           <ValuesStrip />
+        </Container>
+      </Section>
+
+      <Section tone="paper" bordered aria-labelledby="identite">
+        <Container>
+          <SectionHeader
+            eyebrow={content.identity.eyebrow}
+            titleId="identite"
+            title={<AccentTitle value={content.identity.title} />}
+            aside={<Lead className="text-lg md:text-lg">{content.identity.text}</Lead>}
+          />
+          <FieldGallery items={content.identity.items} />
         </Container>
       </Section>
 

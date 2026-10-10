@@ -5,14 +5,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Button, Callout } from '@/components/ui';
 import { Checkbox, Field, Input } from '@/components/ui/form';
 import { IconArrowRight, IconSecure } from '@/components/ui/icons';
-import { env } from '@/config/env';
+import { demoTools } from '@/api';
 import { ROUTES } from '@/config/routes';
-import { DEMO_PASSWORD, DEMO_TWO_FACTOR_CODE } from '@/content/demo/team';
 import { loginSchema, type LoginValues } from '@/lib/validation/admin-forms';
 import { useAuth } from './auth-context';
 import { PasswordInput } from './AuthParts';
 import { rememberLoginEmail } from './last-login-email';
-import { REDIRECT_PARAM } from './session-guards';
+import { REDIRECT_PARAM, safeRedirect } from './session-guards';
 
 interface LoginFormProps {
   submitLabel?: string;
@@ -47,6 +46,10 @@ export function LoginForm({ submitLabel = 'Se connecter', defaultEmail = '' }: L
     setFailure(null);
     const result = await login(email, password, remember);
     switch (result.status) {
+      case 'authenticated':
+        rememberLoginEmail(email);
+        navigate(safeRedirect(searchParams.get(REDIRECT_PARAM)), { replace: true });
+        break;
       case 'two-factor':
         rememberLoginEmail(email);
         navigate(withRedirect(ROUTES.admin.twoFactor));
@@ -121,13 +124,14 @@ export function LoginForm({ submitLabel = 'Se connecter', defaultEmail = '' }: L
         {submitLabel}
       </Button>
       <Callout tone="privacy" size="sm" icon={<IconSecure />}>
-        Après connexion, un code de vérification à usage unique vous sera demandé (double authentification).
+        Si la double authentification est activée sur votre compte, un code à usage unique vous sera ensuite
+        demandé.
       </Callout>
-      {env.dataSource === 'mock' ? (
+      {demoTools ? (
         <p className="rounded-xl border border-dashed border-gold-line bg-gold-wash px-4 py-3 text-[13.5px] leading-relaxed text-gold-dark">
-          <strong>Démonstration :</strong> admin@lasistant.pro, contenus@lasistant.pro ou
-          operateur1@lasistant.pro · mot de passe <code className="font-mono">{DEMO_PASSWORD}</code> · code{' '}
-          <code className="font-mono">{DEMO_TWO_FACTOR_CODE}</code>
+          <strong>Démonstration :</strong> {demoTools.credentials.emails.join(', ')} · mot de passe{' '}
+          <code className="font-mono">{demoTools.credentials.password}</code> · code{' '}
+          <code className="font-mono">{demoTools.credentials.twoFactorCode}</code>
         </p>
       ) : null}
     </form>

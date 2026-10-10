@@ -1,6 +1,6 @@
 import { ButtonAnchor, Button } from '@/components/ui';
 import { IconExternalLink, IconPreferences } from '@/components/ui/icons';
-import { CONTACT_CONTENT } from '@/content/pages/public';
+import { usePageContent } from '@/features/content/usePageContent';
 import { useCookieConsent } from '@/features/cookies/consent-context';
 import { addressLine, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { MapPlaceholder } from './MapPlaceholder';
@@ -14,7 +14,7 @@ import { MapPlaceholder } from './MapPlaceholder';
 export function ContactMap() {
   const settings = useSiteSettings();
   const consent = useCookieConsent();
-  const { map } = CONTACT_CONTENT;
+  const { map } = usePageContent('contact');
   const address = addressLine(settings);
 
   if (!settings.address.validated) {

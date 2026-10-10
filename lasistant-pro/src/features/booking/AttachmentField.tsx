@@ -7,18 +7,20 @@ import { formatFileSize } from '@/lib/format';
 import { ACCEPTED_EXTENSIONS, validateAttachment } from './attachment-rules';
 
 interface AttachmentFieldProps {
-  /** Nom du fichier retenu (seule information conservée en phase statique) */
+  /** Nom du fichier retenu */
   value: string;
   onChange: (fileName: string) => void;
+  /** Fichier retenu (déposé dans le stockage privé au moment de l'envoi de la demande) */
+  onFileChange?: (file: File | null) => void;
   hint: string;
 }
 
 /**
  * Pièce jointe facultative : glisser-déposer ou parcourir.
- * Phase statique : seul le nom du fichier est enregistré. Phase 2 : envoi vers un
- * stockage privé, jamais public (les documents sensibles ne sont pas exposés).
+ * Le fichier est envoyé avec la demande vers un stockage privé, jamais public :
+ * seule l'équipe peut l'ouvrir, par un lien temporaire.
  */
-export function AttachmentField({ value, onChange, hint }: AttachmentFieldProps) {
+export function AttachmentField({ value, onChange, onFileChange, hint }: AttachmentFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const labelId = useId();
   const hintId = useId();
@@ -37,10 +39,12 @@ export function AttachmentField({ value, onChange, hint }: AttachmentFieldProps)
     setError(null);
     setDetails({ size: file.size });
     onChange(file.name);
+    onFileChange?.(file);
   };
 
   const remove = () => {
     onChange('');
+    onFileChange?.(null);
     setDetails(null);
     if (inputRef.current) inputRef.current.value = '';
   };

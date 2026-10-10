@@ -1,4 +1,4 @@
-import type { AccentText, FeatureItem, ImageRef } from '@/types';
+import type { AccentText, FeatureItem, GalleryItem, ImageRef } from '@/types';
 
 /** Contenu de la page « À propos » (cahier des charges § 6.6). */
 export const ABOUT_CONTENT = {
@@ -14,7 +14,7 @@ export const ABOUT_CONTENT = {
       accent: 'au service des personnes',
     } satisfies AccentText,
     lead: 'LASISTANT.PRO est une société de service social spécialisée dans l’assistance médicale et l’hébergement en Tunisie. Notre but : vous accompagner dans vos démarches et cerner vos besoins.',
-    image: 'meeting' satisfies ImageRef,
+    image: 'teamMeeting' satisfies ImageRef,
     floatTitle: 'Basés en Tunisie',
   },
   mission: {
@@ -50,6 +50,32 @@ export const ABOUT_CONTENT = {
         text: 'N’hésitez pas à nous solliciter : notre présence est là pour vous offrir un soutien plus personnel.',
       },
     ] satisfies readonly FeatureItem[],
+  },
+  identity: {
+    eyebrow: 'Une équipe identifiable',
+    title: { start: 'Reconnaissables', accent: 'au premier regard' } satisfies AccentText,
+    text: 'Nos accompagnateurs portent le badge LASISTANT.PRO, vos déplacements se font dans un véhicule identifié et un kit de bienvenue vous est remis à votre arrivée. À tout moment, vous savez qui vous accompagne.',
+    items: [
+      {
+        image: 'brandKit',
+        title: 'Aux couleurs de l’agence',
+        text: 'Sac, gourdes, stylos et carnet : « Je suis assisté par Lasistant.Pro ».',
+      },
+      {
+        image: 'welcomeKit',
+        title: 'Un accueil préparé',
+        text: 'Votre kit de bienvenue vous attend à votre arrivée.',
+      },
+      {
+        image: 'teamVehicleDoor',
+        title: 'Un véhicule identifié',
+        text: 'Pour vos trajets entre l’aéroport, votre logement et vos rendez-vous.',
+      },
+    ] satisfies readonly GalleryItem[],
+  },
+  values: {
+    eyebrow: 'Nos valeurs',
+    title: 'Ce qui guide chacune de nos interventions',
   },
   zone: {
     eyebrow: 'Zone d’intervention',

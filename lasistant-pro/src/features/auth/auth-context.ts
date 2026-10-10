@@ -6,6 +6,8 @@ export interface AuthApi {
   session: AuthSession | null;
   login: (email: string, password: string, remember: boolean) => Promise<LoginResult>;
   verifyTwoFactor: (code: string) => Promise<boolean>;
+  /** Connexion avec un code de secours (application d'authentification perdue) */
+  redeemRecoveryCode: (code: string) => Promise<boolean>;
   logout: () => void;
   /** Signale une activité de l'utilisateur (prolonge la session) */
   touch: () => void;

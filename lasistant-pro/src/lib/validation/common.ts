@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+// Zod compile ses schémas avec `new Function` lorsque c'est permis ; la politique de sécurité
+// du site (CSP, sans « unsafe-eval ») l'interdit : on retient directement le mode sans compilation.
+z.config({ jitless: true });
+
 /**
  * Règles de validation partagées par tous les formulaires.
  * Les mêmes schémas pourront être réutilisés côté serveur (validation client + serveur,

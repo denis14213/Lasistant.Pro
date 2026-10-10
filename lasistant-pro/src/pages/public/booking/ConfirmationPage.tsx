@@ -1,6 +1,6 @@
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { useSearchParams, type LoaderFunctionArgs } from 'react-router';
-import { bookingByReferenceQuery, categoriesQuery, publishedArticlesQuery, servicesQuery } from '@/api';
+import { bookingConfirmationQuery, categoriesQuery, publishedArticlesQuery, servicesQuery } from '@/api';
 import { prefetch } from '@/app/prefetch';
 import { Seo } from '@/components/seo/Seo';
 import {
@@ -18,30 +18,37 @@ import {
   TextLink,
 } from '@/components/ui';
 import { IconArrowLeft, IconCalendarAdd, IconCheck, IconConversation, IconDocument, IconPrint } from '@/components/ui/icons';
-import { ROUTES } from '@/config/routes';
+import { CONFIRMATION_PARAMS, ROUTES } from '@/config/routes';
 import { CONTACT_PREFERENCE_LABELS, HOUSING_TYPE_LABELS, SOURCE_LABELS } from '@/content/labels';
-import { CONFIRMATION_CONTENT } from '@/content/pages/public';
 import { ArticleCard } from '@/features/articles/ArticleCard';
 import { useCategoryLookup } from '@/features/articles/useCategoryLookup';
+import { usePageContent } from '@/features/content/usePageContent';
 import { primaryEmail, primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { cn } from '@/lib/cn';
 import { buildIcsEvent, downloadText } from '@/lib/download';
 import { formatDuration, formatLongDate, phoneHref } from '@/lib/format';
-import type { Booking, Service } from '@/types';
+import type { BookingConfirmation, Service } from '@/types';
+
+/** Référence et clé secrète de la demande, lues dans l'adresse de la page. */
+function confirmationParams(params: URLSearchParams) {
+  const reference = params.get(CONFIRMATION_PARAMS.reference);
+  const key = params.get(CONFIRMATION_PARAMS.key);
+  return reference && key ? { reference, key } : null;
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const reference = new URL(request.url).searchParams.get('ref');
+  const demande = confirmationParams(new URL(request.url).searchParams);
   await prefetch(
     servicesQuery(),
     publishedArticlesQuery(),
     categoriesQuery(true),
-    ...(reference ? [bookingByReferenceQuery(reference)] : []),
+    ...(demande ? [bookingConfirmationQuery(demande.reference, demande.key)] : []),
   );
   return null;
 }
 
 /** Lignes du récapitulatif selon le type de demande. */
-function recapRows(booking: Booking, service: Service | undefined, durationMinutes: number) {
+function recapRows(booking: BookingConfirmation, service: Service | undefined, durationMinutes: number) {
   if (booking.source === 'logement' && booking.housing) {
     const { housing } = booking;
     return [
@@ -73,16 +80,19 @@ function recapRows(booking: Booking, service: Service | undefined, durationMinut
 
 /** Confirmation d'envoi d'une demande (réservation ou recherche de logement). */
 export function Component() {
-  const content = CONFIRMATION_CONTENT;
+  const content = usePageContent('confirmation');
   const [searchParams] = useSearchParams();
-  const reference = searchParams.get('ref');
+  const demande = confirmationParams(searchParams);
   const settings = useSiteSettings();
   const phone = primaryPhone(settings);
   const email = primaryEmail(settings);
   const { data: services } = useSuspenseQuery(servicesQuery());
   const { data: articles } = useSuspenseQuery(publishedArticlesQuery());
   const categoryOf = useCategoryLookup();
-  const { data: booking } = useQuery({ ...bookingByReferenceQuery(reference ?? ''), enabled: Boolean(reference) });
+  const { data: booking } = useQuery({
+    ...bookingConfirmationQuery(demande?.reference ?? '', demande?.key ?? ''),
+    enabled: demande !== null,
+  });
 
   const service = services.find((item) => item.id === booking?.serviceId);
   const rows = booking ? recapRows(booking, service, settings.booking.durationMinutes) : [];
@@ -118,10 +128,10 @@ export function Component() {
               <AccentTitle value={content.title} />
             </h1>
             <Lead className="max-w-[620px]">{content.lead}</Lead>
-            {reference ? (
+            {booking ? (
               <p className="inline-flex items-center gap-3 rounded-full border border-line bg-white px-4.5 py-2.5 text-[15px]">
                 <IconDocument className="size-4" aria-hidden />
-                N° de demande <strong className="font-mono tracking-[0.04em]">{reference}</strong>
+                N° de demande <strong className="font-mono tracking-[0.04em]">{booking.reference}</strong>
               </p>
             ) : null}
           </div>

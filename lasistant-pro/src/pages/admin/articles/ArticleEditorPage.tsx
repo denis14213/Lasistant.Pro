@@ -53,7 +53,7 @@ const EMPTY_VALUES: ArticleEditorValues = {
   excerpt: '',
   categoryId: '',
   status: 'brouillon',
-  coverImage: 'meeting',
+  coverImage: 'teamMeeting',
   coverAlt: '',
   seoTitle: '',
   seoDescription: '',
@@ -458,7 +458,7 @@ export function Component() {
             <PanelHeader titleId={`${formId}-couverture`} title="Image de couverture" />
             <PanelBody className="flex flex-col gap-3">
               <ResponsiveImage
-                image={values.coverImage ?? 'meeting'}
+                image={values.coverImage ?? 'teamMeeting'}
                 alt=""
                 sizes="340px"
                 className="h-[180px] w-full rounded-xl object-cover"

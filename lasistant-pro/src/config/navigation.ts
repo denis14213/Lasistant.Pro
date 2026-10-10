@@ -127,6 +127,7 @@ export const ADMIN_NAVIGATION: AdminNavGroup[] = [
         icon: 'articles',
         permission: 'articles:manage',
       },
+      { label: 'Pages du site', to: ROUTES.admin.pages, icon: 'pages', permission: 'pages:manage' },
       { label: 'Médiathèque', to: ROUTES.admin.media, icon: 'images', permission: 'media:manage' },
     ],
   },

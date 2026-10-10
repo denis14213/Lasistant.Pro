@@ -8,7 +8,7 @@ import { breadcrumbTrailSchema } from '@/components/seo/structured-data';
 import { ButtonAnchor, ButtonLink, Container, Section } from '@/components/ui';
 import { IconArrowRight, IconCalendar, IconPhone } from '@/components/ui/icons';
 import { bookingFor, ROUTES } from '@/config/routes';
-import { SERVICES_PAGE_CONTENT } from '@/content/pages/services';
+import { usePageContent } from '@/features/content/usePageContent';
 import { ServiceFinder } from '@/features/services/ServiceFinder';
 import { ServiceRow } from '@/features/services/ServiceRow';
 import { primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
@@ -20,7 +20,7 @@ const BREADCRUMBS = [{ label: 'Accueil', to: ROUTES.home }, { label: 'Nos servic
 
 /** Page « Nos services » (cahier des charges § 6.2). */
 export function Component() {
-  const content = SERVICES_PAGE_CONTENT;
+  const content = usePageContent('services');
   const { data: services } = useSuspenseQuery(servicesQuery());
   const settings = useSiteSettings();
   const phone = primaryPhone(settings);

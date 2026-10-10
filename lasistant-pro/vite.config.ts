@@ -1,7 +1,7 @@
 import { fileURLToPath, URL } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 
 /** Entrées « thin » et « light » des dessins Phosphor : graisses jamais utilisées par le site. */
 const UNUSED_WEIGHT = /\[\s*"(?:thin|light)",/;
@@ -55,13 +55,75 @@ function phosphorUnusedWeights(): Plugin {
   };
 }
 
-// Configuration Vite : React, Tailwind CSS v4 et alias « @ » vers le dossier src.
-export default defineConfig({
-  plugins: [react(), tailwindcss(), phosphorUnusedWeights()],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+const projectRoot = fileURLToPath(new URL('.', import.meta.url));
+
+/**
+ * Source de données choisie à la compilation : la base Supabase (par défaut), ou la base
+ * simulée des tests (VITE_DATA_SOURCE=mock). Le module `@/api/source` est alors remplacé par
+ * `@/api/mock/source` : le site publié ne contient ni la base simulée ni ses données fictives.
+ */
+function dataSourceAlias(mode: string) {
+  const { VITE_DATA_SOURCE } = loadEnv(mode, projectRoot, 'VITE_');
+  if (VITE_DATA_SOURCE !== 'mock') return [];
+  return [
+    {
+      find: /^@\/api\/source$/,
+      replacement: fileURLToPath(new URL('./src/api/mock/source.ts', import.meta.url)),
     },
+  ];
+}
+
+/**
+ * Politique de sécurité du contenu (CSP), ajoutée en tête de index.html à la compilation.
+ * Elle est déduite de la configuration : le site publié n'exécute que ses propres scripts et ne
+ * dialogue qu'avec le projet Supabase configuré, quel que soit l'hébergeur (Cloudflare, Vercel…).
+ * La protection contre l'affichage dans un cadre (« frame-ancestors », sans effet dans une balise
+ * meta) est assurée par l'en-tête X-Frame-Options (public/_headers et vercel.json).
+ */
+function contentSecurityPolicy(mode: string): Plugin {
+  const { VITE_SUPABASE_URL = '' } = loadEnv(mode, projectRoot, 'VITE_');
+  const supabase = VITE_SUPABASE_URL.trim().replace(/\/$/, '');
+  const directives: Record<string, string[]> = {
+    'default-src': ["'self'"],
+    'script-src': ["'self'"],
+    // Attributs « style » : aperçu HTML des e-mails du back-office.
+    'style-src': ["'self'", "'unsafe-inline'"],
+    // Photos de la médiathèque (stockage Supabase ou adresse externe) et aperçus avant envoi.
+    'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+    'font-src': ["'self'", 'data:'],
+    // API, authentification, stockage et temps réel (WebSocket) du projet Supabase.
+    'connect-src': ["'self'", ...(supabase ? [supabase, supabase.replace(/^https:/, 'wss:')] : [])],
+    'object-src': ["'none'"],
+    'base-uri': ["'self'"],
+    'form-action': ["'self'"],
+    'upgrade-insecure-requests': [],
+  };
+  const policy = Object.entries(directives)
+    .map(([name, sources]) => [name, ...sources].join(' '))
+    .join('; ');
+  return {
+    name: 'lasistant:content-security-policy',
+    // En développement, le rechargement à chaud de Vite a besoin de scripts en ligne.
+    apply: 'build',
+    // Juste après la déclaration d'encodage, avant toute ressource.
+    transformIndexHtml(html) {
+      const charset = /<meta charset="[^"]+"\s*\/?>/i.exec(html);
+      if (!charset) throw new Error('index.html : balise <meta charset> introuvable.');
+      const end = charset.index + charset[0].length;
+      const meta = `\n    <meta http-equiv="Content-Security-Policy" content="${policy}" />`;
+      return html.slice(0, end) + meta + html.slice(end);
+    },
+  };
+}
+
+// Configuration Vite : React, Tailwind CSS v4 et alias « @ » vers le dossier src.
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), tailwindcss(), phosphorUnusedWeights(), contentSecurityPolicy(mode)],
+  resolve: {
+    alias: [
+      ...dataSourceAlias(mode),
+      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
+    ],
   },
   server: {
     port: 5173,
@@ -99,4 +161,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

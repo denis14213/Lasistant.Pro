@@ -125,6 +125,16 @@ export const adminRoutes: RouteObject[] = [
                 handle: permission('articles:manage'),
               },
               {
+                path: ROUTES.admin.pages,
+                lazy: () => import('@/pages/admin/pages/PagesAdminPage'),
+                handle: permission('pages:manage'),
+              },
+              {
+                path: `${ROUTES.admin.pages}/:key`,
+                lazy: () => import('@/pages/admin/pages/PageEditorPage'),
+                handle: permission('pages:manage'),
+              },
+              {
                 path: ROUTES.admin.media,
                 lazy: () => import('@/pages/admin/MediaPage'),
                 handle: permission('media:manage'),

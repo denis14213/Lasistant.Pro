@@ -52,6 +52,10 @@ export interface Booking {
   message: string | null;
   housing: HousingCriteria | null;
   attachmentName: string | null;
+  /** Chemin de la pièce jointe dans le stockage privé (consultable par l'équipe via un lien temporaire) */
+  attachmentPath: string | null;
+  /** Clé secrète du lien de confirmation : la référence seule ne permet pas de consulter une demande */
+  confirmationKey: string;
   status: BookingStatus;
   assigneeId: string | null;
   consentAt: string;
@@ -91,5 +95,22 @@ export interface InternalNote {
 /** Données saisies par un visiteur pour créer une demande. */
 export type BookingInput = Omit<
   Booking,
-  'id' | 'reference' | 'status' | 'assigneeId' | 'createdAt' | 'updatedAt' | 'consentAt'
+  'id' | 'reference' | 'status' | 'assigneeId' | 'createdAt' | 'updatedAt' | 'consentAt' | 'confirmationKey'
+>;
+
+/**
+ * Récapitulatif affiché sur la page de confirmation publique : aucune donnée personnelle
+ * (nom, adresse, téléphone, message), seulement ce qui décrit le rendez-vous demandé.
+ */
+export type BookingConfirmation = Pick<
+  Booking,
+  | 'reference'
+  | 'confirmationKey'
+  | 'source'
+  | 'serviceId'
+  | 'requestedDate'
+  | 'requestedTime'
+  | 'contactPreference'
+  | 'housing'
+  | 'createdAt'
 >;

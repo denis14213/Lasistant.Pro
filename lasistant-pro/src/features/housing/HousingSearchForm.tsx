@@ -5,7 +5,7 @@ import type { z } from 'zod';
 import { Button } from '@/components/ui';
 import { ChoiceGroup, Counter, Field, FormErrorSummary, Input, Select, Textarea } from '@/components/ui/form';
 import { IconArrowRight } from '@/components/ui/icons';
-import { ROUTES } from '@/config/routes';
+import { confirmationPath, ROUTES } from '@/config/routes';
 import { BUDGET_PERIOD_LABELS, HOUSING_TYPE_LABELS } from '@/content/labels';
 import {
   ConsentField,
@@ -121,9 +121,7 @@ export function HousingSearchForm({ titleId }: { titleId: string }) {
       {
         onSuccess: (booking) => {
           clearDraft();
-          navigate(
-            `${ROUTES.bookingConfirmation}${booking ? `?ref=${encodeURIComponent(booking.reference)}` : ''}`,
-          );
+          navigate(booking ? confirmationPath(booking) : ROUTES.bookingConfirmation);
         },
       },
     );

@@ -9,6 +9,9 @@ coverage
 .env
 .env.*
 !.env.example
+# Configuration publique (adresse du projet et clé « publishable » de Supabase) : sans secret.
+!.env.production
+!.env.development
 
 # Journaux
 logs
@@ -23,3 +26,7 @@ npm-debug.log*
 Thumbs.db
 *.suo
 *.sw?
+
+# Cloudflare (Wrangler) : état local et secrets de développement
+.wrangler
+.dev.vars*

@@ -11,11 +11,11 @@ import {
 } from '@/components/ui';
 import { IconArrowRight, IconPhone } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
-import { CLOSING_CTA } from '@/content/brand';
 import { primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { cn } from '@/lib/cn';
 import { phoneHref } from '@/lib/format';
 import type { AccentText, IconName } from '@/types';
+import { usePageContent } from '@/features/content/usePageContent';
 
 /**
  * Appels à l'action de fin de page.
@@ -62,12 +62,9 @@ interface ClosingCtaProps {
 }
 
 /** Panneau prune de fin de page : réservation et appel direct. */
-export function ClosingCta({
-  title = CLOSING_CTA.title,
-  text = CLOSING_CTA.text,
-  to = ROUTES.booking,
-}: ClosingCtaProps) {
+export function ClosingCta({ title, text, to = ROUTES.booking }: ClosingCtaProps) {
   const settings = useSiteSettings();
+  const { closingCta } = usePageContent('identite');
   const phone = primaryPhone(settings);
   return (
     <Section spacing="lg" className="pt-0 md:pt-0" aria-labelledby="appel-final">
@@ -82,15 +79,15 @@ export function ClosingCta({
               id="appel-final"
               className="text-[clamp(1.875rem,2.8vw,2.625rem)] leading-[1.08] font-semibold tracking-[-0.032em] max-[359px]:text-[min(1.875rem,9.3vw)]"
             >
-              <AccentTitle value={title} tone="light" />
+              <AccentTitle value={title ?? closingCta.title} tone="light" />
             </h2>
             <Lead tone="on-dark" className="text-lg md:text-lg">
-              {text}
+              {text ?? closingCta.text}
             </Lead>
           </div>
           <div className="relative flex flex-wrap gap-3 max-md:*:w-full">
             <ButtonLink to={to} variant="light" size="lg" trailingIcon={<IconArrowRight />}>
-              {CLOSING_CTA.primaryLabel}
+              {closingCta.primaryLabel}
             </ButtonLink>
             {phone ? (
               <ButtonAnchor href={phoneHref(phone)} variant="outline-light" size="lg" icon={<IconPhone />}>

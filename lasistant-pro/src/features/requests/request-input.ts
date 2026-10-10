@@ -27,6 +27,7 @@ export function createRequestInput(
     message: null,
     housing: null,
     attachmentName: null,
+    attachmentPath: null,
     ...fields,
   };
 }

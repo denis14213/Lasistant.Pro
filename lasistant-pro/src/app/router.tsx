@@ -1,5 +1,5 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
-import { settingsQuery } from '@/api';
+import { pageContentsQuery, settingsQuery } from '@/api';
 import { PageLoader } from '@/components/feedback/PageLoader';
 import { RootError } from './errors/RootError';
 import { prefetch } from './prefetch';
@@ -16,8 +16,9 @@ export const appRoutes: RouteObject[] = [
   {
     id: 'racine',
     Component: RootLayout,
-    // Réglages du site : coordonnées, réservation, maintenance… utilisés partout.
-    loader: () => prefetch(settingsQuery()),
+    // Réglages du site (coordonnées, réservation, maintenance…) et contenus des pages,
+    // utilisés partout (en-tête, pied de page) : chargés une fois, en parallèle.
+    loader: () => prefetch(settingsQuery(), pageContentsQuery()),
     HydrateFallback: () => <PageLoader label="Chargement du site…" />,
     errorElement: <RootError />,
     children: [...publicRoutes, ...adminRoutes],

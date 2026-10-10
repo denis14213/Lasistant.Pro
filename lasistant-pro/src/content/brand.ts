@@ -134,3 +134,18 @@ export const CLOSING_CTA = {
   text: 'Réservez un échange de 1 h avec notre équipe, par e-mail ou par téléphone.',
   primaryLabel: 'Demander un accompagnement',
 } as const;
+
+/**
+ * Contenus de marque partagés (page « Identité » du back-office) : valeurs d'origine,
+ * complétées ou remplacées par les contenus enregistrés dans la base.
+ */
+export const BRAND_CONTENT = {
+  values: BRAND_VALUES,
+  journey: JOURNEY_STEPS,
+  audiences: AUDIENCES,
+  mission: MISSION_STATEMENT,
+  supportQuote: SUPPORT_QUOTE,
+  signature: TEAM_SIGNATURE,
+  medicalDisclaimer: MEDICAL_DISCLAIMER,
+  closingCta: CLOSING_CTA,
+};

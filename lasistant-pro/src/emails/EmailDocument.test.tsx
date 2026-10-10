@@ -50,7 +50,7 @@ describe('gabarits des e-mails', () => {
     if (!template) throw new Error('Modèle introuvable');
     const { context, values } = previewData(template.key, settings, services, SITE);
     expect(emailEnvelope(template, values, context).from).toBe(
-      'Back-office LASISTANT.PRO <securite@lasistant.pro>',
+      'Back-office LASISTANT.PRO <securite@adbm-school.com>',
     );
   });
 

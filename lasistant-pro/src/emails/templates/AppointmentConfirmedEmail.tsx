@@ -1,5 +1,5 @@
 import { CONTACT_PREFERENCE_PHRASES } from '@/content/labels';
-import { ROUTES } from '@/config/routes';
+import { confirmationPath } from '@/config/routes';
 import { activeEntries, addressLine, primaryEmail } from '@/features/settings/useSiteSettings';
 import { fromISODate } from '@/lib/dates';
 import { capitalize, fillTemplate } from '@/lib/text';
@@ -106,11 +106,7 @@ export function AppointmentConfirmedEmail({ envelope, content, values, context }
       </table>
 
       <EmailActions>
-        <EmailButton
-          href={`${siteUrl}${ROUTES.bookingConfirmation}?ref=${encodeURIComponent(booking.reference)}`}
-        >
-          Ajouter à mon agenda
-        </EmailButton>
+        <EmailButton href={`${siteUrl}${confirmationPath(booking)}`}>Ajouter à mon agenda</EmailButton>
         <EmailButton href={changeLink} variant="outline">
           Modifier ou annuler
         </EmailButton>

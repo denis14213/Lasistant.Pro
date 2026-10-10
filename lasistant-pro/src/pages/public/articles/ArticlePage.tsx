@@ -24,13 +24,13 @@ import {
 } from '@/components/ui';
 import { env } from '@/config/env';
 import { ROUTES } from '@/config/routes';
-import { ARTICLES_CONTENT } from '@/content/pages/public';
 import { ArticleCard } from '@/features/articles/ArticleCard';
 import { ArticleMeta } from '@/features/articles/ArticleMeta';
 import { ShareButtons } from '@/features/articles/ShareButtons';
 import { TableOfContents } from '@/components/content/TableOfContents';
 import { IconArrowRight, IconChevronDown, IconPhone } from '@/components/ui/icons';
 import { useCategoryLookup } from '@/features/articles/useCategoryLookup';
+import { usePageContent } from '@/features/content/usePageContent';
 import { primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { formatPublicationDate, phoneHref } from '@/lib/format';
 import { resolveImage } from '@/lib/images';
@@ -53,7 +53,7 @@ export function Component() {
   const categoryOf = useCategoryLookup();
   const settings = useSiteSettings();
   const phone = primaryPhone(settings);
-  const texts = ARTICLES_CONTENT.article;
+  const texts = usePageContent('espace-infos').article;
 
   const category = categoryOf(article.categoryId);
   const blocks = useMemo(() => parseMarkdown(article.body), [article.body]);

@@ -31,12 +31,18 @@ export function ProfilePanel({ user }: { user: AdminUser }) {
 
   const save = useMutation({
     mutationFn: (values: ProfileValues) => accountRepository.updateProfile(user.id, values),
-    onSuccess: async (saved) => {
+    onSuccess: async (saved, values) => {
       reset({ name: saved.name, email: saved.email });
       // Le nom affiché dans le menu et la barre supérieure suit immédiatement.
       auth.updateIdentity({ name: saved.name, email: saved.email });
       queryClient.setQueryData(accountQuery(user.id).queryKey, saved);
-      toast.success('Profil enregistré.');
+      // Une nouvelle adresse n'est appliquée qu'après confirmation par e-mail.
+      const emailPending = values.email.trim().toLowerCase() !== saved.email;
+      toast.success(
+        emailPending
+          ? 'Profil enregistré. Confirmez la nouvelle adresse grâce au lien reçu par e-mail.'
+          : 'Profil enregistré.',
+      );
       await queryClient.invalidateQueries({ queryKey: queryKeys.team });
     },
     onError: (error) => toast.error(getErrorMessage(error)),

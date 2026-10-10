@@ -6,9 +6,10 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { servicesQuery, takenSlotsQuery } from '@/api';
 import { Button, TextAnchor } from '@/components/ui';
 import { IconArrowLeft, IconArrowRight, IconCheck, IconError, IconPhone } from '@/components/ui/icons';
-import { ROUTES } from '@/config/routes';
+import { confirmationPath, ROUTES } from '@/config/routes';
 import { CONTACT_PREFERENCE_LABELS, PROFILE_LABELS } from '@/content/labels';
-import { BOOKING_CONTENT } from '@/content/pages/public';
+import { PAGE_DEFAULTS } from '@/content/pages';
+import { usePageContent } from '@/features/content/usePageContent';
 import { OfflineSubmitHint } from '@/features/requests/FormParts';
 import { createRequestInput, joinPhone, optionalText } from '@/features/requests/request-input';
 import { SubmissionError } from '@/features/requests/SubmissionFeedback';
@@ -30,9 +31,11 @@ import { ReviewStep, type ReviewRow } from './steps/ReviewStep';
 import { ScheduleStep } from './steps/ScheduleStep';
 import { ServiceStep } from './steps/ServiceStep';
 
-const STEPS = BOOKING_CONTENT.steps;
-const LAST_STEP = STEPS.length - 1;
+/** Étapes de la réservation : leur ordre est fixé par le code, leurs textes par la page « Réservation ». */
+const STEP_IDS = ['service', 'schedule', 'contact', 'details', 'review'] as const;
+const LAST_STEP = STEP_IDS.length - 1;
 const STEP_INDEX = { service: 0, schedule: 1, contact: 2, details: 3, review: 4 } as const;
+const DEFAULT_STEPS = PAGE_DEFAULTS.reservation.steps;
 
 /** Heure de référence, lue une seule fois à l'ouverture de la réservation. */
 const readCurrentTime = () => Date.now();
@@ -44,6 +47,10 @@ const readCurrentTime = () => Date.now();
  */
 export function BookingWizard() {
   const settings = useSiteSettings();
+  const content = usePageContent('reservation');
+  const STEPS = STEP_IDS.map(
+    (id, index) => content.steps.find((step) => step.id === id) ?? DEFAULT_STEPS[index] ?? DEFAULT_STEPS[0],
+  );
   const { data: services } = useSuspenseQuery(servicesQuery());
   const { data: taken } = useSuspenseQuery(takenSlotsQuery());
   const [searchParams] = useSearchParams();
@@ -61,6 +68,8 @@ export function BookingWizard() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
   const moveFocusToHeading = useRef(false);
+  // Pièce jointe éventuelle : le fichier n'est pas conservé dans le brouillon du formulaire.
+  const attachment = useRef<File | null>(null);
 
   const form = useForm<BookingFormInput, unknown, BookingFormValues>({
     resolver: zodResolver(bookingSchema),
@@ -112,7 +121,7 @@ export function BookingWizard() {
     setFurthestStep((furthest) => Math.max(furthest, index));
   };
 
-  const currentStep = STEPS[stepIndex] ?? STEPS[0];
+  const currentStep = STEPS[stepIndex] ?? DEFAULT_STEPS[0];
   const stepFields = BOOKING_STEP_FIELDS[currentStep.id];
   const stepErrorCount = stepFields.filter((field) => formState.errors[field]).length;
 
@@ -150,13 +159,11 @@ export function BookingWizard() {
       attachmentName: optionalText(data.attachmentName),
     });
     submission.mutate(
-      { input, honeypot: data.website },
+      { input, honeypot: data.website, attachment: data.attachmentName ? attachment.current : null },
       {
         onSuccess: (booking) => {
           clearDraft();
-          navigate(
-            `${ROUTES.bookingConfirmation}${booking ? `?ref=${encodeURIComponent(booking.reference)}` : ''}`,
-          );
+          navigate(booking ? confirmationPath(booking) : ROUTES.bookingConfirmation);
         },
       },
     );
@@ -300,7 +307,9 @@ export function BookingWizard() {
               <ScheduleStep availability={availability} whatsappEnabled={settings.whatsapp.enabled} />
             ) : null}
             {currentStep.id === 'contact' ? <ContactStep /> : null}
-            {currentStep.id === 'details' ? <DetailsStep /> : null}
+            {currentStep.id === 'details' ? (
+              <DetailsStep onAttachmentChange={(file) => (attachment.current = file)} />
+            ) : null}
             {currentStep.id === 'review' ? <ReviewStep rows={reviewRows} onEdit={goTo} /> : null}
 
             {submission.isError ? (

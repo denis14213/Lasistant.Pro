@@ -1,5 +1,14 @@
 import { ROUTES } from '@/config/routes';
-import type { AccentText, FeatureItem, IconName, IconTone, ImageRef, LinkAction, StepItem } from '@/types';
+import type {
+  AccentText,
+  FeatureItem,
+  GalleryItem,
+  IconName,
+  IconTone,
+  ImageRef,
+  LinkAction,
+  StepItem,
+} from '@/types';
 
 /**
  * Contenus des pages « Nos services » et des trois pages de service.
@@ -56,9 +65,9 @@ export const SERVICES_PAGE_CONTENT = {
   },
   /** Visuels propres à la page « Nos services » (différents des cartes de l'accueil) */
   rowImages: {
-    'assistance-medicale': 'medicalTeam',
+    'assistance-medicale': 'familyConsultation',
     'logement-hebergement': 'brightApartment',
-    'accompagnement-des-malades': 'gardenWalk',
+    'accompagnement-des-malades': 'airportWelcome',
   } satisfies Record<string, ImageRef>,
   help: {
     title: 'Vous ne savez pas quel service choisir ?',
@@ -82,7 +91,7 @@ export const MEDICAL_ASSISTANCE_CONTENT = {
     } satisfies AccentText,
     lead: 'Nous étudions votre dossier en amont, facilitons l’orientation vers un médecin habilité à vous examiner sur place et vous accompagnons dans chacune de vos démarches.',
     note: 'Un service d’accompagnement : nous ne réalisons ni diagnostic ni acte médical.',
-    image: 'medicalTeam' satisfies ImageRef,
+    image: 'familyConsultation' satisfies ImageRef,
     floatTitle: 'Premier échange de 1 h',
     floatText: 'Par e-mail ou par téléphone',
   },
@@ -122,6 +131,28 @@ export const MEDICAL_ASSISTANCE_CONTENT = {
       },
     ] satisfies readonly FeatureItem[],
   },
+  field: {
+    eyebrow: 'Sur le terrain',
+    title: { start: 'Nous vous accompagnons', accent: 'jusqu’en consultation' } satisfies AccentText,
+    lead: 'Une fois en Tunisie, un membre de l’équipe vous accompagne aux rendez-vous chez les médecins vers lesquels vous êtes orienté(e).',
+    items: [
+      {
+        image: 'eyeExam',
+        title: 'Examens et rendez-vous',
+        text: 'Nous organisons vos rendez-vous et vous y accompagnons.',
+      },
+      {
+        image: 'doctorConsultation',
+        title: 'Des échanges facilités',
+        text: 'Nous vous aidons à préparer vos questions et à exposer votre situation.',
+      },
+      {
+        image: 'eyeExamFollowUp',
+        title: 'Un suivi dans la durée',
+        text: 'Nous restons présents pour les rendez-vous de suivi pendant votre séjour.',
+      },
+    ] satisfies readonly GalleryItem[],
+  },
   preparation: {
     eyebrow: 'Avant votre arrivée',
     title: { start: 'Votre parcours de', accent: 'préparation' } satisfies AccentText,
@@ -159,7 +190,7 @@ export const MEDICAL_ASSISTANCE_CONTENT = {
     eyebrow: 'Assistance à domicile',
     title: { start: 'Un suivi personnalisé,', accent: 'chez vous' } satisfies AccentText,
     text: 'Notre équipe fournit une assistance complète et personnalisée à domicile, avec un suivi attentif et une prise en charge chaleureuse.',
-    image: 'supportiveHands' satisfies ImageRef,
+    image: 'careSession' satisfies ImageRef,
     qualities: ['Confort', 'Sécurité', 'Prise en charge professionnelle', 'Approche chaleureuse'],
     pending: 'Modalités et zones d’intervention à confirmer par LASISTANT.PRO',
   },
@@ -175,7 +206,7 @@ export const MEDICAL_ASSISTANCE_CONTENT = {
       tag: 'Accompagnement',
       title: 'Une présence attentive pendant le séjour',
       text: 'Accueil, déplacements, démarches : nous restons à vos côtés.',
-      image: 'seniorCare',
+      image: 'hospitalVisit',
       to: ROUTES.patientSupport,
     },
   ] satisfies ReadonlyArray<{ tag: string; title: string; text: string; image: ImageRef; to: string }>,
@@ -307,7 +338,7 @@ export const PATIENT_SUPPORT_CONTENT = {
       end: 'à la fin du séjour',
     } satisfies AccentText,
     lead: 'Au-delà de l’accueil à l’aéroport, nous accompagnons les personnes pendant leur séjour, avec une attention particulière portée aux personnes âgées.',
-    image: 'gardenWalk' satisfies ImageRef,
+    image: 'hospitalVisit' satisfies ImageRef,
     floatTitle: 'Dès votre arrivée',
     floatText: 'Accueil à l’aéroport et installation',
   },
@@ -333,6 +364,28 @@ export const PATIENT_SUPPORT_CONTENT = {
       },
     ] satisfies readonly FeatureItem[],
   },
+  field: {
+    eyebrow: 'Sur le terrain',
+    title: { start: 'Dès votre arrivée,', accent: 'nous sommes là' } satisfies AccentText,
+    lead: 'Accueil à l’aéroport, kit de bienvenue, trajets vers le logement et les rendez-vous : chaque moment du séjour est préparé avec vous.',
+    items: [
+      {
+        image: 'airportWelcome',
+        title: 'Accueil à l’aéroport',
+        text: 'Nous vous attendons à la sortie et vous aidons avec vos bagages.',
+      },
+      {
+        image: 'welcomeKit',
+        title: 'Installation',
+        text: 'Un kit de bienvenue vous est remis à votre arrivée au logement.',
+      },
+      {
+        image: 'teamVehicleDoor',
+        title: 'Trajets accompagnés',
+        text: 'Un véhicule identifié pour vos déplacements et vos rendez-vous.',
+      },
+    ] satisfies readonly GalleryItem[],
+  },
   seniors: {
     eyebrow: 'Personnes âgées',
     title: { start: 'Une attention', accent: 'particulière', end: 'pour nos aînés' } satisfies AccentText,
@@ -343,7 +396,7 @@ export const PATIENT_SUPPORT_CONTENT = {
       { label: 'Présence attentive et services personnalisés' },
       { label: 'Lien avec les proches', pending: 'à confirmer' },
     ],
-    image: 'seniorCare' satisfies ImageRef,
+    image: 'eyeExamFollowUp' satisfies ImageRef,
   },
   scope: {
     eyebrow: 'En toute transparence',

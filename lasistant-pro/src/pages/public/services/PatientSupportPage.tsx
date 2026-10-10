@@ -1,5 +1,6 @@
 import { ClosingCta } from '@/components/marketing/CallToAction';
 import { FeatureGrid } from '@/components/marketing/FeatureGrid';
+import { FieldGallery } from '@/components/marketing/FieldGallery';
 import { HeroMedia } from '@/components/marketing/HeroMedia';
 import { PageHero } from '@/components/marketing/PageHero';
 import { NumberedSteps } from '@/components/marketing/Steps';
@@ -22,7 +23,7 @@ import {
 } from '@/components/ui';
 import { IconArrival, IconArrowRight, IconExcluded, IconPhone, IconWarning } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
-import { PATIENT_SUPPORT_CONTENT } from '@/content/pages/services';
+import { usePageContent } from '@/features/content/usePageContent';
 import { loadActiveService, useService } from '@/features/services/service-data';
 import { primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { phoneHref } from '@/lib/format';
@@ -33,7 +34,7 @@ export const loader = () => loadActiveService(SLUG);
 
 /** Page « Accompagnement des malades » (cahier des charges § 6.5). */
 export function Component() {
-  const content = PATIENT_SUPPORT_CONTENT;
+  const content = usePageContent('accompagnement');
   const service = useService(SLUG);
   const settings = useSiteSettings();
   const phone = primaryPhone(settings);
@@ -70,7 +71,6 @@ export function Component() {
         aside={
           <HeroMedia
             image={content.hero.image}
-            alt="Un couple âgé se promène dans un jardin arboré"
             objectPosition="center 58%"
             float={{ icon: <IconArrival />, title: content.hero.floatTitle, text: content.hero.floatText, tone: 'gold' }}
           />
@@ -84,7 +84,19 @@ export function Component() {
         </Container>
       </Section>
 
-      <Section aria-labelledby="personnes-agees">
+      <Section aria-labelledby="terrain">
+        <Container>
+          <SectionHeader
+            eyebrow={content.field.eyebrow}
+            titleId="terrain"
+            title={<AccentTitle value={content.field.title} />}
+            aside={<Lead className="text-lg md:text-lg">{content.field.lead}</Lead>}
+          />
+          <FieldGallery items={content.field.items} />
+        </Container>
+      </Section>
+
+      <Section tone="paper" bordered aria-labelledby="personnes-agees">
         <Container className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-20">
           <div className="flex flex-col gap-7">
             <Eyebrow>{content.seniors.eyebrow}</Eyebrow>
@@ -110,7 +122,6 @@ export function Component() {
           <div className="relative h-[340px] overflow-hidden rounded-[160px_24px_24px_24px] md:h-[580px] md:rounded-[220px_32px_32px_32px]">
             <ResponsiveImage
               image={content.seniors.image}
-              alt="Une soignante échange avec une patiente âgée souriante"
               sizes="(min-width: 1024px) 560px, 100vw"
               className="size-full object-cover"
             />

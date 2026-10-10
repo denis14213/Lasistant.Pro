@@ -1,23 +1,28 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Navigate, useNavigate } from 'react-router';
+import type { ResetLinkKind } from '@/api';
 import { Seo } from '@/components/seo/Seo';
-import { Button } from '@/components/ui';
+import { Button, Callout, Spinner } from '@/components/ui';
 import { Field } from '@/components/ui/form';
 import { IconArrowRight } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
 import { AuthHeading, PasswordChecklist, PasswordInput } from '@/features/auth/AuthParts';
-import { completePasswordReset, isResetLinkValid } from '@/features/auth/auth-service';
+import { checkResetLink, completePasswordReset } from '@/features/auth/auth-service';
 import { useToast } from '@/features/toasts/toast-context';
 import { resetPasswordSchema, type ResetPasswordValues } from '@/lib/validation/admin-forms';
 
-/** Choix d'un nouveau mot de passe depuis le lien reçu par e-mail. */
+/**
+ * Choix d'un nouveau mot de passe depuis le lien reçu par e-mail :
+ * réinitialisation, ou activation d'un compte après une invitation.
+ */
 export function Component() {
   const navigate = useNavigate();
   const toast = useToast();
   // Validité du lien vérifiée une seule fois, à l'ouverture de l'écran.
-  const [linkValid] = useState(() => isResetLinkValid());
+  const [link, setLink] = useState<ResetLinkKind | null | 'verification'>('verification');
+  const [failure, setFailure] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -29,25 +34,63 @@ export function Component() {
   });
   const password = useWatch({ control, name: 'password' });
 
-  if (!linkValid) return <Navigate to={ROUTES.admin.linkExpired} replace />;
+  useEffect(() => {
+    let active = true;
+    checkResetLink()
+      .then((kind) => active && setLink(kind))
+      .catch(() => active && setLink(null));
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  const onSubmit = handleSubmit(async () => {
-    const done = await completePasswordReset();
-    if (!done) {
-      navigate(ROUTES.admin.linkExpired, { replace: true });
+  if (link === 'verification') {
+    return <Spinner label="Vérification du lien…" className="py-10" />;
+  }
+  if (link === null) return <Navigate to={ROUTES.admin.linkExpired} replace />;
+
+  const invitation = link === 'invite';
+
+  const onSubmit = handleSubmit(async (values) => {
+    setFailure(null);
+    const outcome = await completePasswordReset(values.password);
+    if (!outcome.ok) {
+      if (outcome.reason === 'expired') {
+        navigate(ROUTES.admin.linkExpired, { replace: true });
+        return;
+      }
+      setFailure(outcome.message);
       return;
     }
-    toast.success('Mot de passe modifié. Vous pouvez vous connecter.');
+    toast.success(
+      invitation
+        ? 'Compte activé. Connectez-vous avec votre nouveau mot de passe.'
+        : 'Mot de passe modifié. Vous pouvez vous connecter.',
+    );
     navigate(ROUTES.admin.login, { replace: true });
   });
 
   return (
     <>
-      <Seo title="Nouveau mot de passe" description="Choix d’un nouveau mot de passe." noIndex />
+      <Seo
+        title={invitation ? 'Activer mon compte' : 'Nouveau mot de passe'}
+        description="Choix d’un nouveau mot de passe."
+        noIndex
+      />
       <form noValidate onSubmit={onSubmit} aria-labelledby="titre-reinit" className="flex flex-col gap-7">
-        <AuthHeading title="Nouveau mot de passe" titleId="titre-reinit">
-          Choisissez un mot de passe que vous n’utilisez sur aucun autre site.
+        <AuthHeading
+          title={invitation ? 'Bienvenue dans l’équipe' : 'Nouveau mot de passe'}
+          titleId="titre-reinit"
+        >
+          {invitation
+            ? 'Choisissez le mot de passe de votre compte LASISTANT.PRO. Vous pourrez ensuite activer la double authentification.'
+            : 'Choisissez un mot de passe que vous n’utilisez sur aucun autre site.'}
         </AuthHeading>
+        {failure ? (
+          <Callout tone="danger" size="sm" role="alert">
+            {failure}
+          </Callout>
+        ) : null}
         <Field label="Nouveau mot de passe" id="password" error={errors.password?.message}>
           <PasswordInput autoComplete="new-password" {...register('password')} />
         </Field>
@@ -67,7 +110,7 @@ export function Component() {
           loading={isSubmitting}
           trailingIcon={<IconArrowRight />}
         >
-          Enregistrer et me connecter
+          {invitation ? 'Activer mon compte' : 'Enregistrer et me connecter'}
         </Button>
       </form>
     </>

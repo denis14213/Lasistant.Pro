@@ -1,4 +1,5 @@
 import type { IconName } from './icon';
+import type { ImageRef } from './media';
 
 /**
  * Structures éditoriales partagées par les contenus de pages.
@@ -32,6 +33,13 @@ export interface FeatureItem {
 }
 
 export interface StepItem {
+  title: string;
+  text: string;
+}
+
+/** Photo commentée d'une galerie (« Sur le terrain ») : moment réel d'un accompagnement. */
+export interface GalleryItem {
+  image: ImageRef;
   title: string;
   text: string;
 }

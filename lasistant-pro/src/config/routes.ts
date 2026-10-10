@@ -40,6 +40,8 @@ export const ROUTES = {
     articleNew: '/admin/articles/nouveau',
     articleEdit: (id: string) => `/admin/articles/${id}`,
     media: '/admin/medias',
+    pages: '/admin/pages',
+    page: (key: string) => `/admin/pages/${key}`,
     settings: '/admin/reglages',
     seo: '/admin/reglages/seo',
     legal: '/admin/reglages/mentions-legales',
@@ -58,4 +60,16 @@ export function servicePath(slug: string): string {
 /** Chemin de réservation présélectionnant un service. */
 export function bookingFor(serviceId: string): string {
   return `${ROUTES.booking}?service=${encodeURIComponent(serviceId)}`;
+}
+
+/** Paramètres de la page de confirmation : référence et clé secrète de la demande. */
+export const CONFIRMATION_PARAMS = { reference: 'ref', key: 'cle' } as const;
+
+/** Page de confirmation d'une demande (la clé empêche de consulter la demande d'un tiers). */
+export function confirmationPath(booking: { reference: string; confirmationKey: string }): string {
+  const params = new URLSearchParams({
+    [CONFIRMATION_PARAMS.reference]: booking.reference,
+    [CONFIRMATION_PARAMS.key]: booking.confirmationKey,
+  });
+  return `${ROUTES.bookingConfirmation}?${params.toString()}`;
 }

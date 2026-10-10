@@ -1,26 +1,22 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { accountQuery, accountRepository, getErrorMessage, queryKeys } from '@/api';
+import { useEffect, useState } from 'react';
+import { accountQuery, accountRepository, demoTools, getErrorMessage, queryKeys } from '@/api';
 import { Panel, PanelBody, PanelHeader } from '@/components/admin/AdminPage';
-import { Badge, Button, Callout, Dialog, IconBox } from '@/components/ui';
+import { Badge, Button, Callout, Dialog, IconBox, Spinner } from '@/components/ui';
 import { IconKey, IconSecure } from '@/components/ui/icons';
 import { IconCopy, IconDownload, IconMobile, IconSecurityWarning } from '@/components/ui/icons-admin';
-import { env } from '@/config/env';
-import { DEMO_TWO_FACTOR_CODE } from '@/content/demo/team';
 import { OneTimeCodeInput } from '@/features/auth/AuthParts';
 import { useToast } from '@/features/toasts/toast-context';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { downloadText } from '@/lib/download';
 import { formatPublicationDate } from '@/lib/format';
 import { pluralize } from '@/lib/text';
-import type { AdminUser } from '@/types';
-
-/** Clé de configuration manuelle affichée en phase statique (aucun secret réel). */
-const DEMO_SETUP_KEY = 'LASI STAN TPRO DEMO 2026';
+import type { AdminUser, TwoFactorEnrollment } from '@/types';
 
 /**
  * Double authentification : état, codes de secours, activation et désactivation.
- * Phase 2 : Supabase Auth (facteurs TOTP) remplacera la vérification simulée.
+ * L'application d'authentification (TOTP) est gérée par Supabase Auth : la clé secrète
+ * n'est jamais conservée par le site, seul le QR code est affiché le temps de la configuration.
  */
 export function TwoFactorPanel({ user }: { user: AdminUser }) {
   const toast = useToast();
@@ -32,17 +28,22 @@ export function TwoFactorPanel({ user }: { user: AdminUser }) {
     return queryClient.invalidateQueries({ queryKey: queryKeys.team });
   };
 
-  const toggle = useMutation({
-    mutationFn: (enabled: boolean) => accountRepository.setTwoFactor(user.id, enabled),
+  const disable = useMutation({
+    mutationFn: () => accountRepository.disableTwoFactor(user.id),
     onSuccess: async (saved) => {
       setDialog(null);
-      toast.success(
-        saved.twoFactorEnabled ? 'Double authentification activée.' : 'Double authentification désactivée.',
-      );
+      toast.success('Double authentification désactivée.');
       await saveUser(saved);
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });
+
+  const onEnabled = async (saved: AdminUser) => {
+    toast.success('Double authentification activée. Générez maintenant vos codes de secours.');
+    await saveUser(saved);
+    // Sans codes de secours, la perte du téléphone bloquerait l'accès au compte.
+    setDialog('codes');
+  };
 
   return (
     <Panel labelledBy="double-authentification">
@@ -140,8 +141,8 @@ export function TwoFactorPanel({ user }: { user: AdminUser }) {
             <Button
               variant="danger"
               shape="rounded"
-              loading={toggle.isPending}
-              onClick={() => toggle.mutate(false)}
+              loading={disable.isPending}
+              onClick={() => disable.mutate()}
             >
               Désactiver
             </Button>
@@ -151,42 +152,77 @@ export function TwoFactorPanel({ user }: { user: AdminUser }) {
 
       <EnableTwoFactorDialog
         open={dialog === 'enable'}
+        user={user}
         onClose={() => setDialog(null)}
-        onConfirm={() => toggle.mutate(true)}
-        pending={toggle.isPending}
+        onEnabled={onEnabled}
       />
     </Panel>
   );
 }
 
+/** Clé de configuration lisible : groupes de 4 caractères. */
+function formatSecret(secret: string): string {
+  return secret
+    .replace(/\s+/g, '')
+    .replace(/(.{4})/g, '$1 ')
+    .trim();
+}
+
 function EnableTwoFactorDialog({
   open,
+  user,
   onClose,
-  onConfirm,
-  pending,
+  onEnabled,
 }: {
   open: boolean;
+  user: AdminUser;
   onClose: () => void;
-  onConfirm: () => void;
-  pending: boolean;
+  onEnabled: (user: AdminUser) => Promise<unknown>;
 }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [enrollment, setEnrollment] = useState<TwoFactorEnrollment | null>(null);
 
-  const close = () => {
+  const reset = () => {
     setCode('');
     setError(null);
+    setEnrollment(null);
+  };
+
+  const start = useMutation({
+    mutationFn: () => accountRepository.startTwoFactor(user.id),
+    onSuccess: setEnrollment,
+  });
+  const confirm = useMutation({
+    mutationFn: (factorId: string) => accountRepository.confirmTwoFactor(user.id, factorId, code),
+    onSuccess: async (saved) => {
+      reset();
+      await onEnabled(saved);
+    },
+    onError: (failure) => {
+      setError(getErrorMessage(failure));
+      setCode('');
+    },
+  });
+
+  // Une nouvelle configuration est préparée à chaque ouverture (QR code à usage unique).
+  const { mutate: startEnrollment } = start;
+  useEffect(() => {
+    if (open) startEnrollment();
+  }, [open, startEnrollment]);
+
+  const close = () => {
+    reset();
     onClose();
   };
-  const confirm = () => {
-    if (code !== DEMO_TWO_FACTOR_CODE) {
-      setError(
-        'Ce code est incorrect ou a expiré. Saisissez le code actuellement affiché par votre application.',
-      );
+  const submit = () => {
+    if (!enrollment) return;
+    if (!/^\d{6}$/.test(code)) {
+      setError('Saisissez les 6 chiffres affichés par votre application.');
       return;
     }
     setError(null);
-    onConfirm();
+    confirm.mutate(enrollment.factorId);
   };
 
   return (
@@ -201,32 +237,61 @@ function EnableTwoFactorDialog({
           <Button variant="outline" shape="rounded" onClick={close}>
             Annuler
           </Button>
-          <Button shape="rounded" loading={pending} disabled={code.length < 6} onClick={confirm}>
+          <Button
+            shape="rounded"
+            loading={confirm.isPending}
+            disabled={code.length < 6 || !enrollment}
+            onClick={submit}
+          >
             Activer
           </Button>
         </>
       }
     >
       <div className="flex flex-col gap-5">
-        <div className="flex flex-wrap items-center gap-5">
-          <div className="placeholder-hatch flex size-36 shrink-0 items-center justify-center rounded-xl border border-line text-center text-[12.5px] font-semibold text-muted">
-            QR code
-            <br />à scanner
+        {start.isError ? (
+          <Callout tone="danger" size="sm" role="alert">
+            {getErrorMessage(start.error)}{' '}
+            <button type="button" className="font-semibold underline" onClick={() => start.mutate()}>
+              Réessayer
+            </button>
+          </Callout>
+        ) : !enrollment ? (
+          <Spinner label="Préparation du QR code…" className="py-6" />
+        ) : (
+          <div className="flex flex-wrap items-center gap-5">
+            {enrollment.qrCode ? (
+              <img
+                src={enrollment.qrCode}
+                alt="QR code à scanner avec votre application d’authentification"
+                width={144}
+                height={144}
+                className="size-36 shrink-0 rounded-xl border border-line bg-white p-2"
+              />
+            ) : (
+              <div className="placeholder-hatch flex size-36 shrink-0 items-center justify-center rounded-xl border border-line text-center text-[12.5px] font-semibold text-muted">
+                QR code
+                <br />à scanner
+              </div>
+            )}
+            <div className="min-w-0 flex-1 text-sm">
+              <p className="text-muted">Impossible de scanner ? Saisissez cette clé dans l’application :</p>
+              <p className="mt-1.5 font-mono font-semibold tracking-[0.08em] break-all text-ink">
+                {formatSecret(enrollment.secret)}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0 flex-1 text-sm">
-            <p className="text-muted">Impossible de scanner ? Saisissez cette clé dans l’application :</p>
-            <p className="mt-1.5 font-mono font-semibold tracking-[0.08em] break-all text-ink">
-              {DEMO_SETUP_KEY}
-            </p>
-          </div>
-        </div>
+        )}
         <div className="flex flex-col gap-2">
           <p id="code-activation-libelle" className="text-[13.5px] font-semibold">
             Code à 6 chiffres
           </p>
           <OneTimeCodeInput
             value={code}
-            onChange={setCode}
+            onChange={(value) => {
+              setCode(value);
+              setError(null);
+            }}
             invalid={error !== null}
             describedBy={error ? 'code-activation-erreur' : undefined}
           />
@@ -235,9 +300,9 @@ function EnableTwoFactorDialog({
               {error}
             </p>
           ) : null}
-          {env.dataSource === 'mock' ? (
+          {demoTools ? (
             <p className="text-[13px] text-muted">
-              Démonstration : saisissez le code {DEMO_TWO_FACTOR_CODE}.
+              Démonstration : saisissez le code {demoTools.credentials.twoFactorCode}.
             </p>
           ) : null}
         </div>

@@ -1,12 +1,13 @@
 import { ROUTES } from '@/config/routes';
-import { LEGAL_NOTICE } from '@/content/legal';
+import { usePageContent } from '@/features/content/usePageContent';
 import { LegalDocumentView } from '@/features/legal/LegalDocumentView';
 
 /** Mentions légales (cahier des charges § 6.12). */
 export function Component() {
+  const legalDocument = usePageContent('mentions-legales');
   return (
     <LegalDocumentView
-      document={LEGAL_NOTICE}
+      document={legalDocument}
       path={ROUTES.legalNotice}
       seo={{
         title: 'Mentions légales',

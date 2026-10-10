@@ -1,15 +1,16 @@
 import { Controller } from 'react-hook-form';
 import { Field, Input, Select, Textarea } from '@/components/ui/form';
 import { STAY_DURATIONS } from '@/content/labels';
-import { BOOKING_CONTENT } from '@/content/pages/public';
+import { usePageContent } from '@/features/content/usePageContent';
 import { isoDateInDays } from '@/lib/dates';
 import { AttachmentField } from '../AttachmentField';
 import { useBookingForm } from '../booking-form';
 
 /** Étape 4 : informations complémentaires, toutes facultatives. */
-export function DetailsStep() {
+export function DetailsStep({ onAttachmentChange }: { onAttachmentChange: (file: File | null) => void }) {
   const { register, control, formState } = useBookingForm();
   const { errors } = formState;
+  const { privacyHint, attachmentHint } = usePageContent('reservation');
 
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -29,7 +30,7 @@ export function DetailsStep() {
         label="Votre message"
         id="message"
         error={errors.message?.message}
-        hint={BOOKING_CONTENT.privacyHint}
+        hint={privacyHint}
         className="md:col-span-2"
       >
         <Textarea
@@ -46,7 +47,8 @@ export function DetailsStep() {
             <AttachmentField
               value={field.value}
               onChange={field.onChange}
-              hint={BOOKING_CONTENT.attachmentHint}
+              onFileChange={onAttachmentChange}
+              hint={attachmentHint}
             />
           )}
         />

@@ -21,8 +21,8 @@ import {
 import { Switch } from '@/components/ui/form';
 import { IconCheck, IconCookie } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
-import { CONSENT_CATEGORIES, COOKIE_FAQ, type ConsentCategory } from '@/content/cookies';
-import { COOKIES_PAGE_CONTENT } from '@/content/pages/public';
+import { CONSENT_CATEGORIES, type ConsentCategory } from '@/content/cookies';
+import { usePageContent } from '@/features/content/usePageContent';
 import { useCookieConsent } from '@/features/cookies/consent-context';
 import type { ConsentChoices } from '@/features/cookies/consent-storage';
 import { CookieDuration } from '@/features/cookies/ConsentCategoryRow';
@@ -34,7 +34,7 @@ const TAG_TONES = { essential: 'success', analytics: 'brand', thirdParty: 'gold'
 
 /** Page « Gestion des cookies » : choix détaillés, liste des cookies et réponses (cahier des charges § 10). */
 export function Component() {
-  const content = COOKIES_PAGE_CONTENT;
+  const content = usePageContent('cookies');
   const consent = useCookieConsent();
   // Les interrupteurs forment un brouillon : rien n'est appliqué avant l'enregistrement.
   const [draft, setDraft] = useState<ConsentChoices>(consent.choices);
@@ -120,8 +120,8 @@ export function Component() {
             <div className="mt-4 flex flex-col gap-5">
               <h2 className="text-h3 font-semibold">Questions fréquentes</h2>
               <Accordion
-                defaultOpenId={COOKIE_FAQ[0]?.id ?? null}
-                items={COOKIE_FAQ.map((item) => ({ id: item.id, title: item.question, content: <p>{item.answer}</p> }))}
+                defaultOpenId={content.faq[0]?.id ?? null}
+                items={content.faq.map((item) => ({ id: item.id, title: item.question, content: <p>{item.answer}</p> }))}
               />
             </div>
           </div>

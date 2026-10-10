@@ -15,8 +15,8 @@ import {
 } from '@/components/ui';
 import { IconClock, IconEmail, IconLock, IconPhone } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
-import { BOOKING_CONTENT } from '@/content/pages/public';
 import { BookingWizard } from '@/features/booking/BookingWizard';
+import { usePageContent } from '@/features/content/usePageContent';
 import { primaryEmail, primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { phoneHref } from '@/lib/format';
 
@@ -26,7 +26,7 @@ const BREADCRUMBS = [{ label: 'Accueil', to: ROUTES.home }, { label: 'Réservati
 
 /** Page « Réservation en ligne » (cahier des charges § 6.7). */
 export function Component() {
-  const content = BOOKING_CONTENT;
+  const content = usePageContent('reservation');
   const settings = useSiteSettings();
   const phone = primaryPhone(settings);
   const email = primaryEmail(settings);

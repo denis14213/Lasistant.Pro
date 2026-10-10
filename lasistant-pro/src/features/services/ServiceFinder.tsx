@@ -1,13 +1,13 @@
 import { Link } from 'react-router';
 import { Card, IconBox } from '@/components/ui';
 import { IconArrowRight } from '@/components/ui/icons';
-import { SERVICES_PAGE_CONTENT } from '@/content/pages/services';
+import { usePageContent } from '@/features/content/usePageContent';
 
 /**
  * Orientation rapide : le visiteur choisit sa situation et rejoint le bon service.
  */
 export function ServiceFinder() {
-  const { finder } = SERVICES_PAGE_CONTENT;
+  const { finder } = usePageContent('services');
   return (
     <Card className="relative z-[2] p-3 shadow-raised">
       <div className="px-4.5 pt-4.5 pb-3">

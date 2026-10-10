@@ -1,4 +1,4 @@
-import { ROUTES } from '@/config/routes';
+import { confirmationPath } from '@/config/routes';
 import { activeEntries, addressLine, primaryEmail } from '@/features/settings/useSiteSettings';
 import { formatDuration, formatLongDate } from '@/lib/format';
 import { capitalize, fillTemplate } from '@/lib/text';
@@ -58,11 +58,7 @@ export function RequesterConfirmationEmail({ envelope, content, values, context 
 
       <EmailActions>
         {booking.requestedDate ? (
-          <EmailButton
-            href={`${siteUrl}${ROUTES.bookingConfirmation}?ref=${encodeURIComponent(booking.reference)}`}
-          >
-            Ajouter à mon agenda
-          </EmailButton>
+          <EmailButton href={`${siteUrl}${confirmationPath(booking)}`}>Ajouter à mon agenda</EmailButton>
         ) : null}
         <EmailButton href={siteUrl} variant="outline">
           Visiter le site

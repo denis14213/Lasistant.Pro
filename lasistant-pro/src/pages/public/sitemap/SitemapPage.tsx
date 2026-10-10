@@ -7,7 +7,7 @@ import { Breadcrumbs, Card, Container, Eyebrow, Lead, Section, TextLink } from '
 import { env } from '@/config/env';
 import { SITEMAP_GROUPS, type NavItem } from '@/config/navigation';
 import { ROUTES, servicePath } from '@/config/routes';
-import { SITEMAP_CONTENT } from '@/content/pages/public';
+import { usePageContent } from '@/features/content/usePageContent';
 import { cn } from '@/lib/cn';
 
 export const loader = () => prefetch(servicesQuery(), categoriesQuery());
@@ -26,7 +26,7 @@ interface SitemapGroup {
  * Les titres de groupe suffisent à s'orienter : aucune icône décorative par carte.
  */
 export function Component() {
-  const content = SITEMAP_CONTENT;
+  const content = usePageContent('plan-du-site');
   const { data: services } = useSuspenseQuery(servicesQuery());
   const { data: categories } = useSuspenseQuery(categoriesQuery());
   const [discover, requests, articles, legal] = SITEMAP_GROUPS;

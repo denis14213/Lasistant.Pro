@@ -24,8 +24,8 @@ interface EmailDefinition {
   recipient: (context: EmailContext) => string;
 }
 
-const NOTIFICATIONS_ADDRESS = 'notifications@lasistant.pro';
-const SECURITY_ADDRESS = 'securite@lasistant.pro';
+const NOTIFICATIONS_ADDRESS = 'notifications@adbm-school.com';
+const SECURITY_ADDRESS = 'securite@adbm-school.com';
 
 const toRequester = (context: EmailContext) => context.booking.email;
 const toMember = (context: EmailContext) => context.member.email;

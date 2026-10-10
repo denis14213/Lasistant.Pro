@@ -5,17 +5,17 @@ import { breadcrumbTrailSchema, localBusinessSchema } from '@/components/seo/str
 import { AccentTitle, Breadcrumbs, ButtonAnchor, Container, Eyebrow, Lead, Section } from '@/components/ui';
 import { IconArrowRight } from '@/components/ui/icons';
 import { ROUTES } from '@/config/routes';
-import { CONTACT_CONTENT } from '@/content/pages/public';
 import { ContactCards } from '@/features/contact/ContactCards';
 import { ContactForm } from '@/features/contact/ContactForm';
 import { ContactMap } from '@/features/contact/ContactMap';
+import { usePageContent } from '@/features/content/usePageContent';
 import { primaryEmail, useSiteSettings } from '@/features/settings/useSiteSettings';
 
 const BREADCRUMBS = [{ label: 'Accueil', to: ROUTES.home }, { label: 'Contact' }];
 
 /** Page « Contact » (cahier des charges § 6.10). */
 export function Component() {
-  const content = CONTACT_CONTENT;
+  const content = usePageContent('contact');
   const settings = useSiteSettings();
   const email = primaryEmail(settings);
 

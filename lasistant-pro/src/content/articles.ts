@@ -53,8 +53,8 @@ Le jour de votre arrivée, quelques informations simplifient l’accueil :
 ## Préparer vos questions
 
 Notez vos questions avant le premier échange de 1 h : ce temps est le vôtre. Logement, déplacements, déroulement du séjour : aucune question n’est trop simple.`,
-      coverImage: 'documents',
-      coverAlt: 'Documents, carnet et ordinateur portable sur un bureau',
+      coverImage: 'doctorConsultation',
+      coverAlt: 'Une patiente expose sa situation à un médecin lors d’une consultation',
       categoryId: 'assistance-medicale',
       status: 'publie',
       publishedAt: isoDaysAgo(8, '09:00', now),
@@ -139,8 +139,8 @@ Notre accueil à l’aéroport vous évite de chercher votre chemin après le vo
 Installation dans le logement, repérage des lieux utiles, premières démarches : nous restons disponibles pour vous aider à prendre vos marques.
 
 ::cta`,
-      coverImage: 'airportTraveler',
-      coverAlt: 'Voyageur avec sa valise dans un hall d’aéroport',
+      coverImage: 'airportWelcome',
+      coverAlt: 'Arrivée de clientes accompagnées par LASISTANT.PRO dans le hall de l’aéroport',
       categoryId: 'conseils-pratiques',
       status: 'publie',
       publishedAt: isoDaysAgo(24, '09:30', now),
@@ -180,8 +180,8 @@ Convenez à l’avance de la manière dont vous souhaitez être tenus informés 
 > **Notre engagement** Une présence attentive, des services personnalisés et une attention constante au confort, à la sécurité et au bien-être.
 
 ::cta`,
-      coverImage: 'seniorCare',
-      coverAlt: 'Une soignante échange avec une patiente âgée',
+      coverImage: 'eyeExamFollowUp',
+      coverAlt: 'Un patient examiné par un ophtalmologue lors d’un rendez-vous organisé par LASISTANT.PRO',
       categoryId: 'accompagnement',
       status: 'publie',
       publishedAt: isoDaysAgo(31, '11:00', now),
@@ -257,8 +257,8 @@ L’étude préalable n’est ni une consultation ni un diagnostic. Seul le méd
 > **Important** LASISTANT.PRO est un service d’accompagnement et de coordination. Nous ne remplaçons pas un professionnel de santé.
 
 ::cta`,
-      coverImage: 'medicalTeam',
-      coverAlt: 'Deux médecins échangent devant un écran',
+      coverImage: 'familyConsultation',
+      coverAlt: 'Une patiente et sa proche échangent avec un médecin pendant une consultation',
       categoryId: 'assistance-medicale',
       status: 'publie',
       publishedAt: isoDaysAgo(45, '09:00', now),
@@ -295,8 +295,8 @@ Chaque personne a ses habitudes. Nous adaptons notre présence à son rythme, av
 - signaler sans attendre toute difficulté.
 
 ::cta`,
-      coverImage: 'supportiveHands',
-      coverAlt: 'Deux mains jointes en signe de soutien',
+      coverImage: 'careSession',
+      coverAlt: 'Un soignant prend en charge un patient lors d’un rendez-vous médical',
       categoryId: 'accompagnement',
       status: 'publie',
       publishedAt: isoDaysAgo(53, '14:00', now),
@@ -334,8 +334,8 @@ Le premier échange dure environ 1 heure, par e-mail ou par téléphone. Nous fa
 ## Après l’échange
 
 Nous vous indiquons les prochaines étapes et préparons avec vous la suite de votre accompagnement.`,
-      coverImage: 'meeting',
-      coverAlt: 'Deux femmes échangent autour d’une table',
+      coverImage: 'teamMeeting',
+      coverAlt: 'Un membre de l’équipe LASISTANT.PRO échange avec une cliente',
       categoryId: 'conseils-pratiques',
       status: 'brouillon',
       publishedAt: null,

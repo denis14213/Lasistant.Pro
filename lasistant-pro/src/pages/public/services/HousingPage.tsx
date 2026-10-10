@@ -21,7 +21,7 @@ import {
 } from '@/components/ui';
 import { IconArrowRight, IconCalendar, IconEmail, IconKey, IconPhone } from '@/components/ui/icons';
 import { bookingFor, ROUTES } from '@/config/routes';
-import { HOUSING_CONTENT } from '@/content/pages/services';
+import { usePageContent } from '@/features/content/usePageContent';
 import { HousingSearchForm } from '@/features/housing/HousingSearchForm';
 import { loadActiveService, useService } from '@/features/services/service-data';
 import { primaryEmail, primaryPhone, useSiteSettings } from '@/features/settings/useSiteSettings';
@@ -33,7 +33,7 @@ export const loader = () => loadActiveService(SLUG);
 
 /** Page « Logement & hébergement » et formulaire de recherche (cahier des charges § 6.4). */
 export function Component() {
-  const content = HOUSING_CONTENT;
+  const content = usePageContent('logement');
   const service = useService(SLUG);
   const settings = useSiteSettings();
   const phone = primaryPhone(settings);
@@ -69,7 +69,6 @@ export function Component() {
         aside={
           <HeroMedia
             image={content.hero.image}
-            alt="Salon lumineux d’un appartement meublé"
             float={{ icon: <IconKey />, title: content.hero.floatTitle, text: content.hero.floatText, tone: 'success' }}
           />
         }

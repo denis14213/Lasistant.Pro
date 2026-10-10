@@ -7,9 +7,9 @@ import { ToValidate } from '@/components/ui';
 import { IconAddress, IconEmail, IconFacebook, IconInfo, IconPhone } from '@/components/ui/icons';
 import { FOOTER_COMPANY_LINKS, LEGAL_LINKS } from '@/config/navigation';
 import { ROUTES, servicePath } from '@/config/routes';
-import { MEDICAL_DISCLAIMER } from '@/content/brand';
 import { activeEntries, facebookHref, useSiteSettings } from '@/features/settings/useSiteSettings';
 import { phoneHref } from '@/lib/format';
+import { usePageContent } from '@/features/content/usePageContent';
 
 /**
  * Pied de page : toutes les coordonnées proviennent des réglages du site
@@ -17,6 +17,7 @@ import { phoneHref } from '@/lib/format';
  */
 export function SiteFooter() {
   const settings = useSiteSettings();
+  const { medicalDisclaimer } = usePageContent('identite');
   const { data: services = [] } = useQuery(servicesQuery());
   const pages = services.filter((service) => service.kind === 'page' && service.showInMenu);
   const { address } = settings;
@@ -114,7 +115,7 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} LASISTANT.PRO. Tous droits réservés.</p>
           <p className="flex items-center gap-2.5">
             <IconInfo className="size-4" aria-hidden />
-            {MEDICAL_DISCLAIMER}
+            {medicalDisclaimer}
           </p>
           <nav aria-label="Informations légales">
             <ul className="flex flex-wrap gap-x-6 gap-y-2">

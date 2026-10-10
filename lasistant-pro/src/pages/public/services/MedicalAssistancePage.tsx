@@ -2,6 +2,7 @@ import { faqQuery } from '@/api';
 import { prefetch } from '@/app/prefetch';
 import { ClosingCta } from '@/components/marketing/CallToAction';
 import { FeatureGrid } from '@/components/marketing/FeatureGrid';
+import { FieldGallery } from '@/components/marketing/FieldGallery';
 import { HeroMedia } from '@/components/marketing/HeroMedia';
 import { PageHero } from '@/components/marketing/PageHero';
 import { VerticalSteps } from '@/components/marketing/Steps';
@@ -25,7 +26,7 @@ import {
 } from '@/components/ui';
 import { IconArrowRight, IconCalendar, IconClock, IconConversation, IconInfo } from '@/components/ui/icons';
 import { bookingFor, ROUTES } from '@/config/routes';
-import { MEDICAL_ASSISTANCE_CONTENT } from '@/content/pages/services';
+import { usePageContent } from '@/features/content/usePageContent';
 import { FaqExcerpt } from '@/features/faq/FaqExcerpt';
 import { RelatedServiceCard } from '@/features/services/RelatedServiceCard';
 import { loadActiveService, useService } from '@/features/services/service-data';
@@ -39,7 +40,7 @@ export async function loader() {
 
 /** Page « Assistance médicale » (cahier des charges § 6.3). */
 export function Component() {
-  const content = MEDICAL_ASSISTANCE_CONTENT;
+  const content = usePageContent('assistance-medicale');
   const service = useService(SLUG);
   const breadcrumbs = [
     { label: 'Accueil', to: ROUTES.home },
@@ -80,7 +81,6 @@ export function Component() {
         aside={
           <HeroMedia
             image={content.hero.image}
-            alt="Une médecin explique un dossier à un confrère devant un écran"
             objectPosition="60% center"
             float={{ icon: <IconClock />, title: content.hero.floatTitle, text: content.hero.floatText }}
           />
@@ -107,7 +107,19 @@ export function Component() {
         </Container>
       </Section>
 
-      <Section aria-labelledby="preparation">
+      <Section aria-labelledby="terrain">
+        <Container>
+          <SectionHeader
+            eyebrow={content.field.eyebrow}
+            titleId="terrain"
+            title={<AccentTitle value={content.field.title} />}
+            aside={<Lead className="text-lg md:text-lg">{content.field.lead}</Lead>}
+          />
+          <FieldGallery items={content.field.items} />
+        </Container>
+      </Section>
+
+      <Section tone="paper" bordered aria-labelledby="preparation">
         <Container className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-20">
           <div className="flex flex-col gap-7">
             <Eyebrow>{content.preparation.eyebrow}</Eyebrow>
@@ -148,7 +160,6 @@ export function Component() {
           <div className="relative h-[340px] overflow-hidden rounded-[24px_160px_24px_24px] md:h-[560px] md:rounded-[32px_220px_32px_32px]">
             <ResponsiveImage
               image={content.homeCare.image}
-              alt="Une main posée avec bienveillance sur celle d’une personne"
               sizes="(min-width: 1024px) 600px, 100vw"
               className="size-full object-cover"
             />

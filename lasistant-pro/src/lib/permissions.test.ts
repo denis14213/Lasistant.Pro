@@ -10,6 +10,7 @@ describe('droits par rôle', () => {
 
   it('limite l’éditeur aux contenus, en lecture seule sur les demandes', () => {
     expect(can('editeur', 'articles:manage')).toBe(true);
+    expect(can('editeur', 'pages:manage')).toBe(true);
     expect(can('editeur', 'requests:view')).toBe(true);
     expect(can('editeur', 'requests:manage')).toBe(false);
     expect(can('editeur', 'settings:manage')).toBe(false);
@@ -19,6 +20,7 @@ describe('droits par rôle', () => {
     expect(can('operateur', 'requests:manage')).toBe(true);
     expect(can('operateur', 'agenda:manage')).toBe(true);
     expect(can('operateur', 'articles:manage')).toBe(false);
+    expect(can('operateur', 'pages:manage')).toBe(false);
     expect(can('operateur', 'users:manage')).toBe(false);
   });
 

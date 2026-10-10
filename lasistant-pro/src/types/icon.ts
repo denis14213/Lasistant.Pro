@@ -36,4 +36,13 @@ export type IconName =
 
 /** Icônes de la navigation du back-office (configuration du code, jamais stockée en base). */
 export type AdminIconName =
-  'dashboard' | 'inbox' | 'calendar' | 'services' | 'articles' | 'images' | 'identity' | 'users' | 'email';
+  | 'dashboard'
+  | 'inbox'
+  | 'calendar'
+  | 'services'
+  | 'articles'
+  | 'pages'
+  | 'images'
+  | 'identity'
+  | 'users'
+  | 'email';

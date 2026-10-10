@@ -25,7 +25,7 @@ import {
   IconUpload,
   IconWarning,
 } from '@/components/ui/icons';
-import { IconCopy, IconImage } from '@/components/ui/icons-admin';
+import { IconCopy, IconDownload, IconImage } from '@/components/ui/icons-admin';
 import { checkUpload, uploadImage, uploadPrivateDocument } from '@/features/admin/media/media-upload';
 import { useSession } from '@/features/auth/auth-context';
 import { useToast } from '@/features/toasts/toast-context';
@@ -378,6 +378,23 @@ function MediaDetails({ item, onClose, onDelete, onCopy }: MediaDetailsProps) {
   const address = item.isPrivate ? 'Stockage privé (non public)' : resolveImage(item.image).src;
   const altMissing = !item.isPrivate && altText.trim().length < 5;
 
+  // Document privé : lien temporaire demandé au moment du clic (onglet ouvert pendant le clic).
+  const download = async () => {
+    const tab = window.open('', '_blank');
+    const url = await mediaRepository.downloadUrl(item).catch(() => null);
+    if (!url) {
+      tab?.close();
+      toast.error('Ce document n’est pas disponible au téléchargement.');
+      return;
+    }
+    if (tab) {
+      tab.opener = null;
+      tab.location.href = url;
+    } else {
+      window.location.href = url;
+    }
+  };
+
   const save = useMutation({
     mutationFn: () =>
       mediaRepository.update(item.id, { altText: altText.trim(), title: title.trim(), rightsConfirmed }),
@@ -401,9 +418,20 @@ function MediaDetails({ item, onClose, onDelete, onCopy }: MediaDetailsProps) {
       />
       <PanelBody className="flex flex-col gap-3.5">
         {item.isPrivate ? (
-          <span className="flex h-[210px] items-center justify-center rounded-xl bg-cloud text-muted">
-            <IconDocument className="size-12" aria-hidden />
-          </span>
+          <div className="flex flex-col gap-2.5">
+            <span className="flex h-[210px] items-center justify-center rounded-xl bg-cloud text-muted">
+              <IconDocument className="size-12" aria-hidden />
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              shape="rounded"
+              icon={<IconDownload />}
+              onClick={() => void download()}
+            >
+              Télécharger le document
+            </Button>
+          </div>
         ) : (
           <ResponsiveImage
             image={item.image}

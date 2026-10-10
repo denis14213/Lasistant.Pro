@@ -35,7 +35,8 @@ export function PasswordPanel({ user }: { user: AdminUser }) {
   const password = useWatch({ control, name: 'password' });
 
   const change = useMutation({
-    mutationFn: (values: ChangePasswordValues) => accountRepository.changePassword(user.id, values.current),
+    mutationFn: (values: ChangePasswordValues) =>
+      accountRepository.changePassword(user.id, values.current, values.password),
     onSuccess: (saved) => {
       reset();
       queryClient.setQueryData(accountQuery(user.id).queryKey, saved);

@@ -9,6 +9,7 @@ import { createServicesSeed } from '@/content/services';
 import { createSiteSettingsSeed } from '@/content/site-settings';
 import { uniqueId } from '@/lib/ids';
 import { readStorage, removeStorage, writeStorage } from '@/lib/storage';
+import type { PageKey } from '@/content/pages';
 import type {
   AccountSession,
   ActivityEntry,
@@ -53,6 +54,8 @@ export interface MockTables {
   activity: ActivityEntry[];
   media: MediaItem[];
   emailTemplates: EmailTemplate[];
+  /** Contenus de pages modifiés (les autres reprennent le contenu d'origine) */
+  pages: Partial<Record<PageKey, { content: unknown; updatedAt: string; updatedBy: string }>>;
 }
 
 interface StoredDatabase {
@@ -63,7 +66,7 @@ interface StoredDatabase {
 
 const STORAGE_KEY = 'lp-demo-db';
 /** À incrémenter à chaque évolution de structure : les données locales sont alors régénérées. */
-const DATABASE_VERSION = 5;
+const DATABASE_VERSION = 6;
 
 let cache: StoredDatabase | null = null;
 
@@ -86,6 +89,7 @@ function createSeed(now = new Date()): StoredDatabase {
       activity: createActivitySeed(now),
       media: createMediaSeed(now),
       emailTemplates: createEmailTemplatesSeed(now),
+      pages: {},
     },
   };
 }

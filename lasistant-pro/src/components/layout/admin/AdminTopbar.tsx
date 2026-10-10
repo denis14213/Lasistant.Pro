@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { getSeedDate, resetDatabase } from '@/api';
+import { demoTools } from '@/api';
 import { queryClient } from '@/app/query-client';
 import { Avatar } from '@/components/admin/Avatar';
 import { Button, ButtonAnchor, Dialog, IconButton } from '@/components/ui';
 import { IconExternalLink, IconInfo, IconMenu, IconSearch } from '@/components/ui/icons';
 import { IconNotification, IconRestore } from '@/components/ui/icons-admin';
-import { env } from '@/config/env';
 import { ROUTES } from '@/config/routes';
 import { useAdminNotifications } from '@/features/admin/notifications/useAdminNotifications';
 import { useSession } from '@/features/auth/auth-context';
@@ -52,7 +51,7 @@ export function AdminTopbar({ onOpenMenu }: AdminTopbarProps) {
   };
 
   const resetDemo = () => {
-    resetDatabase();
+    demoTools?.reset();
     queryClient.clear();
     setDemoOpen(false);
     toast.success('Données de démonstration réinitialisées.');
@@ -83,7 +82,7 @@ export function AdminTopbar({ onOpenMenu }: AdminTopbarProps) {
         </label>
       </form>
 
-      {env.dataSource === 'mock' ? (
+      {demoTools ? (
         <button
           type="button"
           onClick={() => setDemoOpen(true)}
@@ -159,8 +158,9 @@ export function AdminTopbar({ onOpenMenu }: AdminTopbarProps) {
         }
       >
         <p className="text-[14.5px] text-muted">
-          Données créées le {formatDateTime(getSeedDate())}. La réinitialisation restaure les contenus
-          d’origine et efface les demandes envoyées depuis le site sur cet appareil.
+          Données créées le {formatDateTime(demoTools?.seededAt() ?? new Date().toISOString())}. La
+          réinitialisation restaure les contenus d’origine et efface les demandes envoyées depuis le site sur
+          cet appareil.
         </p>
       </Dialog>
     </header>

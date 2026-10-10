@@ -7,6 +7,7 @@ import {
   ArrowUpIcon,
   BellIcon,
   BellRingingIcon,
+  BrowsersIcon,
   CalendarCheckIcon,
   ChatCenteredTextIcon,
   ChatCircleDotsIcon,
@@ -131,6 +132,8 @@ export const IconIdentity = defineIcon(IdentificationCardIcon, 'identity');
 export const IconSettings = defineIcon(GearSixIcon, 'settings');
 /** Mentions légales. */
 export const IconLegal = defineIcon(ScalesIcon, 'legal');
+/** Pages du site (textes et visuels de chaque page) */
+export const IconPages = defineIcon(BrowsersIcon, 'pages');
 export const IconDesktop = defineIcon(MonitorIcon, 'desktop');
 export const IconMobile = defineIcon(DeviceMobileIcon, 'mobile');
 export const IconTablet = defineIcon(DeviceTabletIcon, 'tablet');

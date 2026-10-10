@@ -195,10 +195,14 @@ export function Component() {
       },
     );
   }
-  if (booking.source === 'reservation') {
+  if (booking.source === 'reservation' || booking.attachmentName) {
     detailItems.push({
       label: 'Document',
-      value: booking.attachmentName ?? <span className="text-muted">Aucun document joint</span>,
+      value: booking.attachmentName ? (
+        <AttachmentLink name={booking.attachmentName} path={booking.attachmentPath} />
+      ) : (
+        <span className="text-muted">Aucun document joint</span>
+      ),
     });
   }
 
@@ -446,5 +450,37 @@ export function Component() {
         </div>
       </div>
     </AdminPage>
+  );
+}
+
+/**
+ * Pièce jointe d'une demande : stockée en privé, ouverte par un lien temporaire (5 minutes)
+ * demandé au moment du clic. Seuls les rôles autorisés aux documents privés l'obtiennent.
+ */
+function AttachmentLink({ name, path }: { name: string; path: string | null }) {
+  const toast = useToast();
+  if (!path) return <span>{name}</span>;
+
+  const open = async () => {
+    // Onglet ouvert pendant le clic (sinon bloqué), puis dirigé vers le lien temporaire.
+    const tab = window.open('', '_blank');
+    const url = await bookingsRepository.attachmentUrl(path).catch(() => null);
+    if (!url) {
+      tab?.close();
+      toast.error('Ce document n’est pas accessible avec votre rôle, ou il a été supprimé.');
+      return;
+    }
+    if (tab) {
+      tab.opener = null;
+      tab.location.href = url;
+    } else {
+      window.location.href = url;
+    }
+  };
+
+  return (
+    <button type="button" className="font-semibold text-brand hover:underline" onClick={() => void open()}>
+      {name}
+    </button>
   );
 }

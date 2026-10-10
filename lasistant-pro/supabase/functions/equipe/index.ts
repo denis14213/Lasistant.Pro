@@ -4,12 +4,13 @@
 //   POST /functions/v1/equipe
 //   { "action": "inviter", "email": "…", "role": "editeur", "redirectTo": "https://…" }
 //   { "action": "renvoyer-invitation", "userId": "…", "redirectTo": "https://…" }
-//   { "action": "code-de-secours", "code": "ABCD-EFGH" }
+//
+// Réservée aux administrateurs dont la session a été vérifiée par le code reçu par e-mail
+// (double authentification, Edge Function « code-connexion »).
 //
 // Réponse : { "data": … } (2xx) ou { "error": { "code": "…", "message": "…" } } (4xx/5xx).
 // Les messages d'erreur sont destinés à l'utilisateur (affichés tels quels dans le back-office).
 import { createClient, type SupabaseClient, type User } from 'npm:@supabase/supabase-js@2';
-import bcrypt from 'npm:bcryptjs@2.4.3';
 
 type Role = 'administrateur' | 'editeur' | 'operateur';
 type ErrorCode = 'validation' | 'forbidden' | 'not_found' | 'server' | 'unauthorized';
@@ -56,8 +57,24 @@ function adminClient(): SupabaseClient {
 
 interface Caller {
   user: User;
-  aal: string;
+  token: string;
   member: { id: string; name: string; role: Role; active: boolean };
+}
+
+/** Clé publique du projet (appel d'une route au nom de la personne connectée). */
+function publicKey(): string {
+  const keys = Deno.env.get('SUPABASE_PUBLISHABLE_KEYS');
+  return keys ? JSON.parse(keys).default : Deno.env.get('SUPABASE_ANON_KEY')!;
+}
+
+/** La session de la personne connectée a-t-elle été vérifiée par le code reçu par e-mail ? */
+async function sessionVerified(token: string): Promise<boolean> {
+  const client = createClient(Deno.env.get('SUPABASE_URL')!, publicKey(), {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+  const { data, error } = await client.rpc('second_factor_verified');
+  return !error && data === true;
 }
 
 /** Personne à l'origine de la requête (jeton de session vérifié par Supabase Auth). */
@@ -83,15 +100,17 @@ async function requireCaller(request: Request, admin: SupabaseClient): Promise<C
   if (!member || !member.active) {
     throw new HttpError(403, 'forbidden', 'Votre compte n’a pas accès au back-office.');
   }
-  return { user: userData.user, aal: String(claims.aal ?? 'aal1'), member };
+  return { user: userData.user, token, member };
 }
 
-/** Administrateur actif, double authentification validée si elle est configurée. */
+/** Administrateur actif dont la session a été vérifiée par le code reçu par e-mail. */
 async function requireAdministrator(request: Request, admin: SupabaseClient): Promise<Caller> {
   const caller = await requireCaller(request, admin);
-  const hasVerifiedFactor = (caller.user.factors ?? []).some((factor) => factor.status === 'verified');
-  if (caller.member.role !== 'administrateur' || (hasVerifiedFactor && caller.aal !== 'aal2')) {
+  if (caller.member.role !== 'administrateur') {
     throw new HttpError(403, 'forbidden', 'Votre rôle ne permet pas d’effectuer cette action.');
+  }
+  if (!(await sessionVerified(caller.token))) {
+    throw new HttpError(403, 'forbidden', 'Validez d’abord le code de connexion reçu par e-mail.');
   }
   return caller;
 }
@@ -209,41 +228,6 @@ async function resendInvitation(request: Request, admin: SupabaseClient, body: R
   return { member: updated ?? member, emailSent: result.emailSent, invitationLink: result.invitationLink };
 }
 
-/**
- * Connexion avec un code de secours (application d'authentification perdue) : le code est
- * consommé et la double authentification retirée du compte, à reconfigurer ensuite.
- */
-async function useRecoveryCode(request: Request, admin: SupabaseClient, body: Record<string, unknown>) {
-  const caller = await requireCaller(request, admin);
-  const normalized = String(body.code ?? '')
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '');
-  const invalid = new HttpError(400, 'validation', 'Ce code de secours est incorrect ou a déjà été utilisé.');
-  if (normalized.length !== 8) throw invalid;
-  const code = `${normalized.slice(0, 4)}-${normalized.slice(4)}`;
-
-  const { data: codes } = await admin
-    .from('mfa_recovery_codes')
-    .select('id, code_hash')
-    .eq('user_id', caller.member.id)
-    .is('used_at', null);
-  const match = (codes ?? []).find((row) => bcrypt.compareSync(code, row.code_hash));
-  if (!match) throw invalid;
-
-  await admin.from('mfa_recovery_codes').update({ used_at: new Date().toISOString() }).eq('id', match.id);
-  const factors = await admin.auth.admin.mfa.listFactors({ userId: caller.member.id });
-  for (const factor of factors.data?.factors ?? []) {
-    await admin.auth.admin.mfa.deleteFactor({ id: factor.id, userId: caller.member.id });
-  }
-  await admin.from('activity_log').insert({
-    actor: caller.member.name,
-    actor_id: caller.member.id,
-    label: 'Connexion avec un code de secours : double authentification à reconfigurer',
-    kind: 'team',
-  });
-  return { twoFactorRemoved: true };
-}
-
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (request.method !== 'POST') {
@@ -258,8 +242,6 @@ Deno.serve(async (request) => {
         return json({ data: await invite(request, admin, body) });
       case 'renvoyer-invitation':
         return json({ data: await resendInvitation(request, admin, body) });
-      case 'code-de-secours':
-        return json({ data: await useRecoveryCode(request, admin, body) });
       default:
         return json({ error: { code: 'validation', message: 'Action inconnue.' } }, 400);
     }

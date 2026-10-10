@@ -69,8 +69,9 @@ Erreurs métier : le code est dans `message` (`validation`, `forbidden`, `rate_l
 Opérations qui exigent l’API d’administration de Supabase Auth (`supabase/functions/equipe/index.ts`, JWT vérifié dans le code) :
 
 - `inviter` (administrateurs) : crée le compte et envoie l’invitation ; sans serveur d’e-mails, renvoie un **lien d’activation** à transmettre ;
-- `renvoyer-invitation` (administrateurs) ;
-- `code-de-secours` : consomme un code de secours et retire la double authentification, à reconfigurer ensuite.
+- `renvoyer-invitation` (administrateurs).
+
+Ces actions exigent une session vérifiée par le code de connexion reçu par e-mail (`second_factor_verified()`) : le mot de passe seul ne suffit pas.
 
 ### Edge Function `envoi-emails` (e-mails automatiques)
 

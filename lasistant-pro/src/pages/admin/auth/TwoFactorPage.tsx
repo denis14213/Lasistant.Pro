@@ -23,7 +23,7 @@ function secondsUntil(retryAt: string | null, now: number): number {
 }
 
 function formatWait(seconds: number): string {
-  if (seconds < 60) return `${seconds} s`;
+  if (seconds <= 90) return `${seconds} s`;
   const minutes = Math.ceil(seconds / 60);
   return `${minutes} min`;
 }

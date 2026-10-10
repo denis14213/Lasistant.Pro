@@ -19,7 +19,7 @@ const output = new URL(
   import.meta.url,
 );
 const cleanupOutput = new URL(
-  '../supabase/migrations/20261010200000_retrait_anciennes_photos.sql',
+  '../supabase/migrations/20261010214000_retrait_anciennes_photos.sql',
   import.meta.url,
 );
 /** Date de référence des contenus (les dates relatives des contenus sont calculées à partir d'elle). */
